@@ -6,14 +6,12 @@
 # separate terms of service, privacy policy, and support
 # documentation.
 
-name: Build and Perform synth on stack
+name: Deploy CDK Stack
 
-on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
 
+permissions:
+  id-token: write # This is required for requesting the JWT
+  contents: read  # This is required for actions/checkout
 
 jobs:
   build:
@@ -31,7 +29,7 @@ jobs:
         distribution: 'corretto'
         cache: maven
 
-    - name: Set up Node so we can install CDK
+    - name: Set up Node we can install CDK
       uses: actions/setup-node@v3
       with:
         node-version: "18"
@@ -39,5 +37,13 @@ jobs:
     - name: Install  CDK
       run: npm install -g aws-cdk
     
-    - name: Verify Synth works to validate stack
-      run: cdk synth --validation --context accountId=123456789 east 
+    - name: Setup AWS Creds
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-region: us-east-1
+        role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+    
+    - name: Deploy Stack with CDK
+      run: |
+        ACCOUNT_ID=`aws sts get-caller-identity --query Account --output text`
+        cdk deploy -c accountId=${ACCOUNT_ID} --all --concurrency=2 --require-approval=never --ci
