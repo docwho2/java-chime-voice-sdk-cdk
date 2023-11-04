@@ -5,8 +5,10 @@
 
 This project deploys a simple [SIP Media Application](https://docs.aws.amazon.com/chime-sdk/latest/ag/use-sip-apps.html) with [AWS CDK](https://aws.amazon.com/cdk/) as a maven Java Project.
 
+The goal of the project is to develop Custom CDK components in Java that use AWS API's to provision Chime SDK resources to multiple regions in parallel.
+
 **Features:**
-- Deploys to multiple AWS Regions in paralel (us-east-1 and us-west-2)
+- Deploys to multiple AWS Regions in parallel (us-east-1 and us-west-2)
 - Uses [AWS Custom resources](https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.custom_resources.AwsCustomResource.html) to provsion Chime SDK resources which don't exist in CloudFormation
     - [Voice Connector](src/main/java/cloud/cleo/chimesma/cdk/customresources/ChimeVoiceConnector.java)
     - [SIP Media Application](src/main/java/cloud/cleo/chimesma/cdk/customresources/ChimeSipMediaApp.java)
