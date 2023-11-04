@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+         xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>cloud.cleo.chimesma.cdk</groupId>
+    <artifactId>cdk</artifactId>
+    <version>1.0</version>
+    <packaging>jar</packaging>
+    <name>Chime Voice CDK Provision</name>
+    <description>Provision Chime Resouces via CDK</description>
+    
+
+     <organization>
+        <name>CLEO Cloud Solutions</name>
+        <url>https://cleo.cloud</url>
+    </organization>
+    
+    <developers>
+        <developer>
+            <name>Steve Jensen</name>
+            <email>steve@cleo.cloud</email>
+            <organization>CLEO Cloud Solutions</organization>
+            <organizationUrl>https://www.cleo.cloud</organizationUrl>
+        </developer>
+    </developers>
+    
+    <properties>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <configuration>
+                    <mainClass>cloud.cleo.chimesma.cdk.InfrastructureApp</mainClass>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+    
+    
+    <dependencies>
+        <!-- AWS Cloud Development Kit -->
+        <dependency>
+            <groupId>software.amazon.awscdk</groupId>
+            <artifactId>aws-cdk-lib</artifactId>
+            <version>2.100.0</version>
+        </dependency>
+
+        <!-- Respective AWS Construct Libraries -->
+
+        <dependency>
+            <groupId>software.constructs</groupId>
+            <artifactId>constructs</artifactId>
+            <version>10.1.120</version>
+        </dependency>
+        
+        
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.30</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+          <groupId>org.junit.jupiter</groupId>
+          <artifactId>junit-jupiter-api</artifactId>
+          <version>5.10.0</version>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.junit.jupiter</groupId>
+          <artifactId>junit-jupiter-engine</artifactId>
+          <version>5.10.0</version>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>3.24.2</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+</project>
