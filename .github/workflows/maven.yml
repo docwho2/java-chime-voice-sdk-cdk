@@ -49,4 +49,4 @@ jobs:
       run: npm install -g aws-cdk
     
     - name: Verify Synth works to validate stack
-      run: ./syth.bash
+      run: ${PWD}/synth.bash
