@@ -28,6 +28,7 @@ Login to AWS Console and open a [Cloud Shell](https://aws.amazon.com/cloudshell/
 sudo yum -y install maven
 git clone https://github.com/docwho2/java-chime-voice-sdk-cdk.git
 cd java-chime-voice-sdk-cdk
+
 ```
 
 ### Bootstrap CDK 
@@ -35,13 +36,15 @@ cd java-chime-voice-sdk-cdk
 To deploy with CDK you must bootstrap the environment in both regions where resources are deployed.
 
 ```bash
-./bootstrap.bash 
+./bootstrap.bash
+
 ```
 
 ### Deploy Stacks
 
 ```bash
 ./deploy.bash 
+
 ```
 
 Example Output:
@@ -224,7 +227,8 @@ arn:aws:cloudformation:us-west-2::stack/chime-sdk-cdk-provisioning/3f32ae40-7b20
 ### Remove Resources and destroy stacks
 
 ```bash
-./destroy.bash 
+./destroy.bash
+
 ```
 
 Example Output:
