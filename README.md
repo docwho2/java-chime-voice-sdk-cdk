@@ -17,6 +17,7 @@ The goal of the project is to develop Custom CDK components in Java that use AWS
 - GitHub Workflow Examples for validating and deploying
     - [Validate Stack with CDK Synth](.github/workflows/maven.yml)
     - [Deploy CDK Stack](.github/workflows/deploy.yml)
+- Outputs SMA ID and Voice Connector Hostname as stack outputs as well as creating Parameter Store entries that could be used by other stacks
 
 ## Deploying
 
