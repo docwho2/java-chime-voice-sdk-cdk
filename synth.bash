@@ -1,5 +1,4 @@
 #!/bin/bash
 
-ACCOUNT_ID=`aws sts get-caller-identity --query Account --output text`
 
-cdk synth -c accountId=${ACCOUNT_ID} east
+cdk synth -c accountId=123456789 east
