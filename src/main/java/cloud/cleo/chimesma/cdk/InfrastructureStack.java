@@ -51,9 +51,10 @@ public class InfrastructureStack extends Stack {
                 .value(sma.getSMAId())
                 .build());
         
-        new CfnOutput(this, "sma-arn", CfnOutputProps.builder()
-                .description("The ARN for the Session Media App (SMA)")
-                .value(sma.getArn())
+        new StringParameter(this, "VC_HOSTNAME_PARAM" , StringParameterProps.builder()
+                .parameterName("/" + getStackName() + "/VC_HOSTNAME")
+                .description("The ID for the Session Media App (SMA)")
+                .stringValue(sma.getSMAId())
                 .build());
 
         new CfnOutput(this, "vc-hostname", CfnOutputProps.builder()
