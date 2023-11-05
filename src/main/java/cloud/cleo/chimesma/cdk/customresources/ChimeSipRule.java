@@ -43,7 +43,8 @@ public abstract class ChimeSipRule extends AwsCustomResource {
                         .service("@aws-sdk/client-chime-sdk-voice")
                         .action("CreateSipRuleCommand")
                         .physicalResourceId(PhysicalResourceId.fromResponse(SR_ID))
-                        .parameters(Map.of("Name", scope.getStackName() + "-" + scope.getRegion(),
+                        // SIP Rules are not region specific, so we need a unique name across all stacks, hence static counter
+                        .parameters(Map.of("Name", scope.getStackName() + "-" + ID_COUNTER.get(),
                                 "TriggerType", type.toString(),
                                 "TriggerValue",triggerValue,
                                 "Disabled", false,
