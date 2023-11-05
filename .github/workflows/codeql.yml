@@ -68,6 +68,7 @@ jobs:
       with:
         java-version: '17'
         distribution: 'corretto'
+        cache: maven
     
     - name: Custom Build
       run: mvn clean install
