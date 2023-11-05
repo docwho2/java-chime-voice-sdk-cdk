@@ -49,4 +49,4 @@ jobs:
     - name: Deploy Stack with CDK
       run: |
         ACCOUNT_ID=`aws sts get-caller-identity --query Account --output text`
-        cdk deploy -c accountId=${ACCOUNT_ID} --all --concurrency=2 --require-approval=never --ci=true
+        cdk deploy -c accountId=${ACCOUNT_ID} -c stackName=chime-cdk-github-action --all --concurrency=2 --require-approval=never --ci=true
