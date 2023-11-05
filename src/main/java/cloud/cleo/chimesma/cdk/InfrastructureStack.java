@@ -3,7 +3,9 @@ package cloud.cleo.chimesma.cdk;
 import cloud.cleo.chimesma.cdk.customresources.ChimeVoiceConnector;
 import cloud.cleo.chimesma.cdk.customresources.ChimeSipRule;
 import cloud.cleo.chimesma.cdk.customresources.ChimeSipMediaApp;
+import cloud.cleo.chimesma.cdk.customresources.ChimeSipRuleVC;
 import cloud.cleo.chimesma.cdk.resources.ChimeSMAFunction;
+import java.util.List;
 import software.amazon.awscdk.App;
 import software.amazon.awscdk.CfnOutput;
 import software.amazon.awscdk.CfnOutputProps;
@@ -38,7 +40,7 @@ public class InfrastructureStack extends Stack {
         ChimeVoiceConnector vc = new ChimeVoiceConnector(this);
 
         // SIP rule that associates the SMA with the Voice Connector
-        ChimeSipRule sr = new ChimeSipRule(this, vc, sma);
+        ChimeSipRule sr = new ChimeSipRuleVC(this, vc, List.of(sma));
         
         new StringParameter(this, "SMA_ID_PARAM" , StringParameterProps.builder()
                 .parameterName("/" + getStackName() + "/SMA_ID")

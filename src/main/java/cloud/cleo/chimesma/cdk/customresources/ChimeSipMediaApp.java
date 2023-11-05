@@ -77,6 +77,10 @@ public class ChimeSipMediaApp extends AwsCustomResource {
         return getResponseField(SMA_ID);
     }
     
+    public String getRegion() {
+        return getResponseField("SipMediaApplication.AwsRegion");
+    }
+    
     /**
      * Required parameters for the CreateSipMediaApplicationCommand API call
      */
