@@ -9,17 +9,15 @@ import java.io.IOException;
 
 import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
-import org.junit.jupiter.api.BeforeEach;
 
 public class InfrastructureStackTest {
     private final static ObjectMapper JSON =
         new ObjectMapper().configure(SerializationFeature.INDENT_OUTPUT, true);
 
     
-    JsonNode stackJson;
+    private final static JsonNode stackJson;
     
-    @BeforeEach
-    public void sythStack() {
+    static {
         App app = new App();
         InfrastructureStack stack = new InfrastructureStack(app, "test");
         stackJson = JSON.valueToTree(app.synth().getStackArtifact(stack.getArtifactId()).getTemplate());
