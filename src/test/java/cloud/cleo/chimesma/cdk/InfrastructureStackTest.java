@@ -1,6 +1,6 @@
-package cloud.cleo.chimesma.squareup.cdk;
+package cloud.cleo.chimesma.cdk;
 
-import cloud.cleo.chimesma.cdk.InfrastructureStack;
+
 import software.amazon.awscdk.App;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -9,20 +9,33 @@ import java.io.IOException;
 
 import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.BeforeEach;
 
 public class InfrastructureStackTest {
     private final static ObjectMapper JSON =
         new ObjectMapper().configure(SerializationFeature.INDENT_OUTPUT, true);
 
-    @Test
-    public void testStack() throws IOException {
+    
+    JsonNode stackJson;
+    
+    @BeforeEach
+    public void sythStack() {
         App app = new App();
         InfrastructureStack stack = new InfrastructureStack(app, "test");
 
-        JsonNode actual = JSON.valueToTree(app.synth().getStackArtifact(stack.getArtifactId()).getTemplate());
-
-        assertThat(actual.toString())
-                //.contains("AWS::ApiGatewayV2::Api")
+        stackJson = JSON.valueToTree(app.synth().getStackArtifact(stack.getArtifactId()).getTemplate());
+    }
+    
+    
+    @Test
+    public void testFunction() throws IOException {
+        assertThat(stackJson.toString())
                 .contains("AWS::Lambda::Function");
+    }
+    
+    @Test
+    public void testSipRule() throws IOException {
+        assertThat(stackJson.toString())
+                .contains("Custom::SipRule");
     }
 }
