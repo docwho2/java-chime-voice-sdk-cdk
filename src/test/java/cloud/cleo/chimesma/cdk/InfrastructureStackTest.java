@@ -22,8 +22,8 @@ public class InfrastructureStackTest {
     public void sythStack() {
         App app = new App();
         InfrastructureStack stack = new InfrastructureStack(app, "test");
-
         stackJson = JSON.valueToTree(app.synth().getStackArtifact(stack.getArtifactId()).getTemplate());
+        System.out.println("Stack Created");
     }
     
     
