@@ -44,3 +44,6 @@ jobs:
         ACCOUNT_ID=`aws sts get-caller-identity --query Account --output text`
         # deploy a stack to Frankfurt to validate everything (just to keep us-east-1 and us-west-2 cleaner)
         cdk deploy -c accountId=${ACCOUNT_ID} -c stackName=chime-cdk-github-action -c regionEast=eu-central-1 --require-approval=never --ci=true east
+      env:
+          # Set this to bogus IP just so VoiceConnector Origination settings are deployed to validate that works
+          PBX_HOSTNAME: 10.0.0.1
