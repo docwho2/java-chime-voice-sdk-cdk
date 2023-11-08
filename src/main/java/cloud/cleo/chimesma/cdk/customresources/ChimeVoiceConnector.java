@@ -94,7 +94,7 @@ public class ChimeVoiceConnector extends AwsCustomResource {
         /**
          * Only need to configure origination if outbound calls are needed for SIP
          */
-        if (PBX_HOSTNAME != null) {
+        if (PBX_HOSTNAME != null && ! PBX_HOSTNAME.isBlank() ) {
             final var origination = new AwsCustomResource(scope, ID + "-ORIG", AwsCustomResourceProps.builder()
                     .resourceType("Custom::VoiceConnectorOrig")
                     .installLatestAwsSdk(Boolean.FALSE)
