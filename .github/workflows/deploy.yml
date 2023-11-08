@@ -1,17 +1,8 @@
-# This workflow will build a Java project with Maven, and cache/restore any dependencies to improve the workflow execution time
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-maven
-
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
 
 name: Deploy CDK Stack
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
     branches: [ "main" ]
     
 permissions:
@@ -51,5 +42,5 @@ jobs:
     - name: Deploy Stack with CDK 
       run: |
         ACCOUNT_ID=`aws sts get-caller-identity --query Account --output text`
-        # deploy a stack to Franfurt to validate everything (just to keep us-east-1 and us-west-2 cleaner
+        # deploy a stack to Frankfurt to validate everything (just to keep us-east-1 and us-west-2 cleaner)
         cdk deploy -c accountId=${ACCOUNT_ID} -c stackName=chime-cdk-github-action -c regionEast=eu-central-1 --require-approval=never --ci=true east
