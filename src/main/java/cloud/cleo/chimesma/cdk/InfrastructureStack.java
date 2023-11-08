@@ -58,6 +58,12 @@ public class InfrastructureStack extends Stack {
                 .description("The Hostname for the Voice Connector")
                 .stringValue(vc.getOutboundName())
                 .build());
+        
+        new StringParameter(this, "VC_ARN_PARAM" , StringParameterProps.builder()
+                .parameterName("/" + getStackName() + "/VC_ARN")
+                .description("The ARN for the Voice Connector")
+                .stringValue(vc.getArn())
+                .build());
 
         new CfnOutput(this, "VCHOSTNAME", CfnOutputProps.builder()
                 .description("The Hostname for the Voice Connector")
