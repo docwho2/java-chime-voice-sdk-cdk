@@ -75,7 +75,7 @@ public class ChimeVoiceConnector extends AwsCustomResource {
         var cidrAllowList = List.of("54.172.60.0/30", "54.244.51.0/30");
         if (PBX_HOSTNAME != null) {
             cidrAllowList = new ArrayList(cidrAllowList);
-            cidrAllowList.add(PBX_HOSTNAME);
+            cidrAllowList.add(PBX_HOSTNAME + "/32");
         }
 
         final var termination = new AwsCustomResource(scope, ID + "-TERM", AwsCustomResourceProps.builder()
