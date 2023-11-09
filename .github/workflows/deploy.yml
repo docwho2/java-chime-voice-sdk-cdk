@@ -38,10 +38,16 @@ jobs:
       with:
         aws-region: us-east-1
         role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+        mask-aws-account-id: true
+    
+    - name: Ensure CDK is bootstraped
+      run: |
+        ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+        cdk bootstrap --ci=true aws://${ACCOUNT_ID}/eu-central-1
     
     - name: Deploy Stack with CDK 
       run: |
-        ACCOUNT_ID=`aws sts get-caller-identity --query Account --output text`
+        ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
         # deploy a stack to Frankfurt to validate everything (just to keep us-east-1 and us-west-2 cleaner)
         cdk deploy -c accountId=${ACCOUNT_ID} -c stackName=chime-cdk-github-action -c regionEast=eu-central-1 --require-approval=never --ci=true east
       env:
