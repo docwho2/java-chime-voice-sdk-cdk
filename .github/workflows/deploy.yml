@@ -43,7 +43,7 @@ jobs:
     - name: Ensure CDK is bootstraped
       run: |
         ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-        cdk bootstrap --ci=true aws://${ACCOUNT_ID}/eu-central-1
+        cdk bootstrap --ci=true aws://${ACCOUNT_ID}/eu-central-1 -c accountId=${ACCOUNT_ID}
     
     - name: Deploy Stack with CDK 
       run: |
