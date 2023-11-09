@@ -59,10 +59,20 @@ public class InfrastructureStack extends Stack {
                 .stringValue(vc.getOutboundName())
                 .build());
         
+        // If there is no PBX in play for SIP routing, set to PSTN to indicate to SMA Lambda that all transfers are PSTN
+        // IE, no need for VC_ARN to be set
+        final String PBX_HOSTNAME = System.getenv("PBX_HOSTNAME");
+        String vc_arn;
+        if (PBX_HOSTNAME != null && ! PBX_HOSTNAME.isBlank() ) {
+            vc_arn = vc.getArn();
+        } else {
+            vc_arn = "PSTN";
+        }
+        
         new StringParameter(this, "VC_ARN_PARAM" , StringParameterProps.builder()
                 .parameterName("/" + getStackName() + "/VC_ARN")
                 .description("The ARN for the Voice Connector")
-                .stringValue(vc.getArn())
+                .stringValue(vc_arn)
                 .build());
 
         new CfnOutput(this, "VCHOSTNAME", CfnOutputProps.builder()
