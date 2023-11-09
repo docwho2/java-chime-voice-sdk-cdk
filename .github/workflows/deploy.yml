@@ -36,7 +36,7 @@ jobs:
     - name: Setup AWS Creds
       uses: aws-actions/configure-aws-credentials@v4
       with:
-        aws-region: us-east-1
+        aws-region: eu-central-1
         role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
         mask-aws-account-id: true
     
