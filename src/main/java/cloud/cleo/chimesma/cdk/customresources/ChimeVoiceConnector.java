@@ -28,7 +28,7 @@ public class ChimeVoiceConnector extends AwsCustomResource {
     private final static String ID = "VC-CR";
 
     /**
-     * If set in the environment, setup Origination to point to it
+     * If set in the environment, setup Origination to point to it and allow from termination as well
      */
     private final static String PBX_HOSTNAME = System.getenv("PBX_HOSTNAME");
 
@@ -74,9 +74,11 @@ public class ChimeVoiceConnector extends AwsCustomResource {
                 .build());
         */
                
+        final boolean hasPBX = PBX_HOSTNAME != null && ! PBX_HOSTNAME.isBlank();
+        
         // Start with list of Twilio NA ranges for SIP Trunking
         var cidrAllowList = List.of("54.172.60.0/30", "54.244.51.0/30");
-        if (PBX_HOSTNAME != null) {
+        if (hasPBX) {
             cidrAllowList = new ArrayList(cidrAllowList);
             cidrAllowList.add(PBX_HOSTNAME + "/32");
         }
@@ -97,7 +99,7 @@ public class ChimeVoiceConnector extends AwsCustomResource {
         /**
          * Only need to configure origination if outbound calls are needed for SIP
          */
-        if (PBX_HOSTNAME != null && ! PBX_HOSTNAME.isBlank() ) {
+        if ( hasPBX ) {
             final var origination = new AwsCustomResource(scope, ID + "-ORIG", AwsCustomResourceProps.builder()
                     .resourceType("Custom::VoiceConnectorOrig")
                     .installLatestAwsSdk(Boolean.FALSE)
