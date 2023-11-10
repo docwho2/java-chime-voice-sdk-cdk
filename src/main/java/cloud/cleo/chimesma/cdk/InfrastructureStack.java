@@ -33,6 +33,12 @@ public class InfrastructureStack extends Stack {
         // Simple SMA Handler that speaks prompt and hangs up
         CfnFunction lambda = new ChimeSMAFunction(this, "sma-lambda");
 
+        new StringParameter(this, "LAMBDAARN" , StringParameterProps.builder()
+                .parameterName("/" + getStackName() + "/LAMBDA_ARN")
+                .description("The Lambda Arn for the Hello World Lambda")
+                .stringValue(lambda.getAtt("Arn").toString())
+                .build());
+        
         // SMA pointing to lambda handler
         ChimeSipMediaApp sma = new ChimeSipMediaApp(this, lambda.getAtt("Arn"));
 
