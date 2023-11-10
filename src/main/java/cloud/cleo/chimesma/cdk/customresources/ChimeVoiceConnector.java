@@ -57,7 +57,9 @@ public class ChimeVoiceConnector extends AwsCustomResource {
                         .build())
                 .build());
 
-        // Enable SIP Logs
+        
+        /**
+        // Don't enable SIP logging on VC, This can be done manually SIP Logs
         final var logging = new AwsCustomResource(scope, ID + "-LOG", AwsCustomResourceProps.builder()
                 .resourceType("Custom::VoiceConnectorLogging")
                 .installLatestAwsSdk(Boolean.FALSE)
@@ -70,7 +72,8 @@ public class ChimeVoiceConnector extends AwsCustomResource {
                                 "LoggingConfiguration", Map.of("EnableSIPLogs", true, "EnableMediaMetricLogs", false)))
                         .build())
                 .build());
-
+        */
+               
         // Start with list of Twilio NA ranges for SIP Trunking
         var cidrAllowList = List.of("54.172.60.0/30", "54.244.51.0/30");
         if (PBX_HOSTNAME != null) {
