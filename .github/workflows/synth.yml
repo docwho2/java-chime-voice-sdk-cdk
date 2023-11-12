@@ -29,5 +29,5 @@ jobs:
         echo "Node Version: $(node -v)"
         echo "CDK Version: $(cdk version)"
     
-    - name: Verify Synth works to validate stack
-      run: cdk synth --validation --context accountId=123456789 east 
+    - name: Run Tests
+      run: mvn test

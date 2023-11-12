@@ -17,10 +17,10 @@ public class InfrastructureStackTest {
         new ObjectMapper().configure(SerializationFeature.INDENT_OUTPUT, true);
 
     
-    private JsonNode stackJson;
+    private static JsonNode stackJson;
     
     @BeforeAll
-    public void init() {
+    public static void init() {
         App app = new App();
         InfrastructureStack stack = new InfrastructureStack(app, "test");
         stackJson = JSON.valueToTree(app.synth().getStackArtifact(stack.getArtifactId()).getTemplate());
