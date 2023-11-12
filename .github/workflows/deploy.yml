@@ -38,24 +38,25 @@ jobs:
       run: npm install -g aws-cdk
     
     - name: Setup AWS Creds
+      id: aws-creds
       uses: aws-actions/configure-aws-credentials@v4
       with:
         aws-region: ${{ env.REGION }}
         role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
         mask-aws-account-id: true
     
-    - name: Add ACCOUNT_ID to Environment
-      run: echo "ACCOUNT_ID=$(aws sts get-caller-identity --region ${REGION} --query Account --output text)" >> $GITHUB_ENV
+    - name: Add AWS_ACCOUNT_ID to Environment
+      run: echo "AWS_ACCOUNT_ID=${{ steps.aws-creds.outputs.aws-account-id }}" >> $GITHUB_ENV
     
     - name: Ensure CDK is bootstraped and up to date
       run: |
-        cdk bootstrap --ci=true -c accountId=${ACCOUNT_ID} aws://${ACCOUNT_ID}/${REGION} 
+        cdk bootstrap --ci=true -c accountId=${AWS_ACCOUNT_ID} aws://${AWS_ACCOUNT_ID}/${REGION} 
     
     - name: Deploy Stack with CDK 
       run: |
         # deploy a stack to Frankfurt to validate everything (just to keep us-east-1 and us-west-2 cleaner)
         # Also you are limited to 3 Voice Connectors per region
-        cdk deploy -c accountId=${ACCOUNT_ID} -c stackName=chime-cdk-github-action -c regionEast=${REGION}  --require-approval=never --ci=true east
+        cdk deploy -c accountId=${AWS_ACCOUNT_ID} -c stackName=chime-cdk-github-action -c regionEast=${REGION}  --require-approval=never --ci=true east
       env:
           # Set this to bogus IP just so VoiceConnector Origination settings are deployed to validate that works
           PBX_HOSTNAME: 10.0.0.1
