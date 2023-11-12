@@ -31,8 +31,9 @@ jobs:
     
     - name: Install AWS CDK
       run: |
-        echo "Node Version: $(node -v)"
+        # Install latest version of AWS CDK
         npm install -g aws-cdk
+        echo "Node Version: $(node -v)"
         echo "CDK Version: $(cdk version)"
     
     - name: Setup AWS Creds
@@ -41,6 +42,8 @@ jobs:
       with:
         aws-region: ${{ env.REGION }}
         role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         mask-aws-account-id: true
     
     - name: Add AWS_ACCOUNT_ID to Environment
