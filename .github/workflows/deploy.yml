@@ -29,11 +29,11 @@ jobs:
         distribution: 'corretto'
         cache: maven
     
-    - name: Install  CDK
+    - name: Install AWS CDK
       run: |
-        node -v
+        echo "Node Version: $(node -v)"
         npm install -g aws-cdk
-        cdk version
+        echo "CDK Version: $(cdk version)"
     
     - name: Setup AWS Creds
       id: aws-creds
