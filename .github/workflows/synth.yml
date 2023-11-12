@@ -22,12 +22,13 @@ jobs:
         distribution: 'corretto'
         cache: maven
 
-    - name: Set up Node so we can install CDK
-      uses: actions/setup-node@v4
-      with:
-        node-version: "18"
+    #- name: Set up Node so we can install CDK
+    #  uses: actions/setup-node@v4
+    #  with:
+    #    node-version: "18"
     
-    - name: Install  CDK
+    - name: Install CDK
+      using: node18
       run: npm install -g aws-cdk
     
     - name: Verify Synth works to validate stack
