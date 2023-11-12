@@ -28,14 +28,12 @@ jobs:
         java-version: '17'
         distribution: 'corretto'
         cache: maven
-
-    - name: Set up Node we can install CDK
-      uses: actions/setup-node@v4
-      with:
-        node-version: "18"
     
     - name: Install  CDK
-      run: npm install -g aws-cdk
+      run: |
+        node -v
+        npm install -g aws-cdk
+        cdk version
     
     - name: Setup AWS Creds
       id: aws-creds
