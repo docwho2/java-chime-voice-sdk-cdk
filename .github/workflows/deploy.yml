@@ -65,8 +65,8 @@ jobs:
         cdk destroy -c accountId=${AWS_ACCOUNT_ID} -c stackName=chime-cdk-gh-wf-pbx -c regionEast=${REGION}  --force --ci=true east
         cdk deploy -c accountId=${AWS_ACCOUNT_ID} -c stackName=chime-cdk-gh-wf-pbx -c regionEast=${REGION}  --require-approval=never --ci=true east
       env:
-          # Set this to bogus IP just so VoiceConnector Origination settings are deployed to validate that works
-          PBX_HOSTNAME: 10.0.0.1
+          # Set this to bogus IP (cannot be private IP) just so VoiceConnector Origination settings are deployed to validate that works
+          PBX_HOSTNAME: 54.0.0.1
           
     - name: Deploy Stack without PBX_HOSTNAME
       run: |
