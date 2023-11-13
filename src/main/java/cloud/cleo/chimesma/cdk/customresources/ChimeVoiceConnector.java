@@ -17,6 +17,7 @@ import software.amazon.awscdk.customresources.AwsSdkCall;
 import software.amazon.awscdk.customresources.PhysicalResourceId;
 import software.amazon.awscdk.customresources.PhysicalResourceIdReference;
 import software.amazon.awscdk.customresources.SdkCallsPolicyOptions;
+import software.amazon.awscdk.services.ec2.AclCidr;
 import software.amazon.awscdk.services.iam.PolicyStatement;
 
 /**
@@ -27,10 +28,7 @@ public class ChimeVoiceConnector extends AwsCustomResource {
 
     private final static String ID = "VC-CR";
 
-    /**
-     * If set in the environment, setup Origination to point to it and allow from termination as well
-     */
-    private final static String PBX_HOSTNAME = System.getenv("PBX_HOSTNAME");
+   
 
     /**
      * The Voice Connector ID in the API response
@@ -38,8 +36,17 @@ public class ChimeVoiceConnector extends AwsCustomResource {
     private final static String VC_ID = "VoiceConnector.VoiceConnectorId";
     private final static String VC_ARN = "VoiceConnector.VoiceConnectorArn";
 
-
+    
+    
     public ChimeVoiceConnector(Stack scope) {
+        this(scope,null,null);
+    }
+    
+    public ChimeVoiceConnector(Stack scope, List<AclCidr> termAllow) {
+        this(scope,termAllow,null);
+    }
+
+    public ChimeVoiceConnector(Stack scope, List<AclCidr> termAllow, String pbx) {
         super(scope, ID, AwsCustomResourceProps.builder()
                 .resourceType("Custom::VoiceConnector")
                 .installLatestAwsSdk(Boolean.FALSE)
@@ -58,6 +65,7 @@ public class ChimeVoiceConnector extends AwsCustomResource {
                 .build());
 
         
+        
         /**
         // Don't enable SIP logging on VC, This can be done manually SIP Logs
         final var logging = new AwsCustomResource(scope, ID + "-LOG", AwsCustomResourceProps.builder()
@@ -73,16 +81,12 @@ public class ChimeVoiceConnector extends AwsCustomResource {
                         .build())
                 .build());
         */
-               
-        final boolean hasPBX = PBX_HOSTNAME != null && ! PBX_HOSTNAME.isBlank();
         
-        // Start with list of Twilio NA ranges for SIP Trunking
-        var cidrAllowList = List.of("54.172.60.0/30", "54.244.51.0/30");
-        if (hasPBX) {
-            cidrAllowList = new ArrayList(cidrAllowList);
-            cidrAllowList.add(PBX_HOSTNAME + "/32");
+        // If term allow not provided, just open up to anything for ease of use
+        if ( termAllow == null ) {
+            termAllow = List.of(AclCidr.anyIpv4());
         }
-
+        
         final var termination = new AwsCustomResource(scope, ID + "-TERM", AwsCustomResourceProps.builder()
                 .resourceType("Custom::VoiceConnectorTerm")
                 .installLatestAwsSdk(Boolean.FALSE)
@@ -92,14 +96,14 @@ public class ChimeVoiceConnector extends AwsCustomResource {
                         .action("PutVoiceConnectorTerminationCommand")
                         .physicalResourceId(PhysicalResourceId.of("termination"))
                         .parameters(Map.of("VoiceConnectorId", getResponseFieldReference(VC_ID),
-                                "Termination", Map.of("CallingRegions", List.of("US"), "CidrAllowedList", cidrAllowList, "Disabled", false)))
+                                "Termination", Map.of("CallingRegions", List.of("US"), "CidrAllowedList", termAllow.stream().map(ta -> ta.toCidrConfig().getCidrBlock()).toList(), "Disabled", false)))
                         .build())
                 .build());
 
         /**
          * Only need to configure origination if outbound calls are needed for SIP
          */
-        if ( hasPBX ) {
+        if ( pbx != null ) {
             final var origination = new AwsCustomResource(scope, ID + "-ORIG", AwsCustomResourceProps.builder()
                     .resourceType("Custom::VoiceConnectorOrig")
                     .installLatestAwsSdk(Boolean.FALSE)
@@ -109,7 +113,7 @@ public class ChimeVoiceConnector extends AwsCustomResource {
                             .action("PutVoiceConnectorOriginationCommand")
                             .physicalResourceId(PhysicalResourceId.of("origination"))
                             .parameters(Map.of("VoiceConnectorId", getResponseFieldReference(VC_ID),
-                                    "Origination", Map.of("Routes", List.of(Map.of("Host", PBX_HOSTNAME, "Port", 5060, "Protocol", "UDP", "Priority", 1, "Weight", 1)), "Disabled", false)))
+                                    "Origination", Map.of("Routes", List.of(Map.of("Host", pbx, "Port", 5060, "Protocol", "UDP", "Priority", 1, "Weight", 1)), "Disabled", false)))
                             .build())
                     .build());
         }

@@ -5,10 +5,12 @@ import cloud.cleo.chimesma.cdk.customresources.ChimeSipRule;
 import cloud.cleo.chimesma.cdk.customresources.ChimeSipMediaApp;
 import cloud.cleo.chimesma.cdk.customresources.ChimeSipRuleVC;
 import cloud.cleo.chimesma.cdk.resources.ChimeSMAFunction;
+import java.util.ArrayList;
 import java.util.List;
 import software.amazon.awscdk.App;
 import software.amazon.awscdk.CfnOutput;
 import software.amazon.awscdk.CfnOutputProps;
+import software.amazon.awscdk.services.ec2.AclCidr;
 import software.constructs.Construct;
 import software.amazon.awscdk.Stack;
 import software.amazon.awscdk.StackProps;
@@ -23,6 +25,12 @@ import software.amazon.awscdk.services.ssm.StringParameterProps;
  */
 public class InfrastructureStack extends Stack {
 
+     /**
+     * If set in the environment, setup Origination to point to it and allow from termination as well
+     */
+    private final static String PBX_HOSTNAME = System.getenv("PBX_HOSTNAME");
+    
+    
     public InfrastructureStack(final App parent, final String id) {
         this(parent, id, null);
     }
@@ -41,9 +49,16 @@ public class InfrastructureStack extends Stack {
         
         // SMA pointing to lambda handler
         ChimeSipMediaApp sma = new ChimeSipMediaApp(this, lambda.getAtt("Arn"));
-
+        
+        // Start with list of Twilio NA ranges for SIP Trunking
+        var cidrAllowList = List.of(AclCidr.ipv4("54.172.60.0/30"), AclCidr.ipv4("54.244.51.0/30"));
+        if (PBX_HOSTNAME != null && ! PBX_HOSTNAME.isBlank()) {
+            cidrAllowList = new ArrayList(cidrAllowList);
+            cidrAllowList.add(AclCidr.ipv4(PBX_HOSTNAME + "/32"));
+        }
+        
         // Voice Connector
-        ChimeVoiceConnector vc = new ChimeVoiceConnector(this);
+        ChimeVoiceConnector vc = new ChimeVoiceConnector(this,cidrAllowList,PBX_HOSTNAME);
 
         // SIP rule that associates the SMA with the Voice Connector
         ChimeSipRule sr = new ChimeSipRuleVC(this, vc, List.of(sma));
@@ -67,7 +82,6 @@ public class InfrastructureStack extends Stack {
         
         // If there is no PBX in play for SIP routing, set to PSTN to indicate to SMA Lambda that all transfers are PSTN
         // IE, no need for VC_ARN to be set
-        final String PBX_HOSTNAME = System.getenv("PBX_HOSTNAME");
         String vc_arn;
         if (PBX_HOSTNAME != null && ! PBX_HOSTNAME.isBlank() ) {
             vc_arn = vc.getArn();
