@@ -29,5 +29,5 @@ jobs:
         echo "Node Version: $(node -v)"
         echo "CDK Version: $(cdk version)"
     
-    - name: Run Tests
-      run: mvn test
+    - name: Syth Stack
+      run: cdk synth -c accountId=123456789 east
