@@ -17,6 +17,7 @@ jobs:
 
     strategy:
       matrix:
+        # Deploy 2 environments, 1 to test with PBX set, one without
         environment: [ frankfurt, frankfurt-pbx ]
     runs-on: ubuntu-latest
     environment: ${{ matrix.environment }}
