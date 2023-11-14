@@ -5,9 +5,6 @@ on:
   push:
     branches: [ "main" ]
 
-env:
-  # Region to deploy
-  REGION: eu-central-1
     
 permissions:
   id-token: write # This is required for requesting the JWT
@@ -18,7 +15,11 @@ concurrency: deploy
 jobs:
   build:
 
+    strategy:
+      matrix:
+        environment: [ frankfurt, frankfurt-pbx ]
     runs-on: ubuntu-latest
+    environment: ${{ matrix.environment }}
 
     steps:
     - name:  Checkout Code
@@ -42,7 +43,7 @@ jobs:
       id: aws-creds
       uses: aws-actions/configure-aws-credentials@v4
       with:
-        aws-region: ${{ env.REGION }}
+        aws-region: ${{ vars.REGION }}
         # The full role ARN if you are using OIDC
         # https://github.com/aws-actions/configure-aws-credentials#oidc
         role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
@@ -56,21 +57,15 @@ jobs:
     
     - name: Ensure CDK is bootstraped and up to date
       run: |
-        cdk bootstrap --ci=true -c accountId=${AWS_ACCOUNT_ID} aws://${AWS_ACCOUNT_ID}/${REGION} 
+        cdk bootstrap --ci=true -c accountId=${AWS_ACCOUNT_ID} aws://${AWS_ACCOUNT_ID}/${{ vars.REGION }}
     
-    - name: Deploy Stack with PBX_HOSTNAME
+    - name: Deploy Stack
       run: |
-        # deploy a stack to Frankfurt to validate everything (just to keep us-east-1 and us-west-2 cleaner)
+        # deploy stacks to Frankfurt to validate everything (just to keep us-east-1 and us-west-2 cleaner)
         # Also you are limited to 3 Voice Connectors per region
-        cdk destroy -c accountId=${AWS_ACCOUNT_ID} -c stackName=chime-cdk-gh-wf-pbx -c regionEast=${REGION}  --force --ci=true east
-        cdk deploy -c accountId=${AWS_ACCOUNT_ID} -c stackName=chime-cdk-gh-wf-pbx -c regionEast=${REGION}  --require-approval=never --ci=true east
+        cdk destroy -c accountId=${AWS_ACCOUNT_ID} -c stackName=${{ vars.STACK_NAME }}  -c regionEast=${{ vars.REGION }}  --force --ci=true east
+        cdk deploy -c accountId=${AWS_ACCOUNT_ID} -c stackName=${{ vars.STACK_NAME }}  -c regionEast=${{ vars.REGION }}  --require-approval=never --ci=true east
       env:
           # Set this to bogus IP (cannot be private IP) just so VoiceConnector Origination settings are deployed to validate that works
-          PBX_HOSTNAME: 54.0.0.1
-          
-    - name: Deploy Stack without PBX_HOSTNAME
-      run: |
-        # deploy a stack to Frankfurt to validate everything (just to keep us-east-1 and us-west-2 cleaner)
-        # Also you are limited to 3 Voice Connectors per region
-        cdk destroy -c accountId=${AWS_ACCOUNT_ID} -c stackName=chime-cdk-gh-wf-nopbx -c regionEast=${REGION}  --force --ci=true east
-        cdk deploy -c accountId=${AWS_ACCOUNT_ID} -c stackName=chime-cdk-gh-wf-nopbx -c regionEast=${REGION}  --require-approval=never --ci=true east
+          PBX_HOSTNAME: ${{ vars.PBX_HOSTNAME }}
+
