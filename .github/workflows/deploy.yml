@@ -14,13 +14,13 @@ concurrency: deploy
 
 jobs:
   build:
-
     strategy:
       matrix:
         # Deploy 2 environments, 1 to test with PBX set, one without
         environment: [ frankfurt, frankfurt-pbx , london, london-pbx ]
     runs-on: ubuntu-latest
     environment: ${{ matrix.environment }}
+    concurrency: ${{ vars.REGION }}
 
     steps:
     - name:  Checkout Code
