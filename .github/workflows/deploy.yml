@@ -20,7 +20,7 @@ jobs:
         environment: [ frankfurt, frankfurt-pbx , london, london-pbx ]
     runs-on: ubuntu-latest
     environment: ${{ matrix.environment }}
-    concurrency: ${{ vars.REGION }}
+    concurrency: ${{ (startsWith(matrix.environment,'london')) && 'london') || 'frankfurt' }}
 
     steps:
     - name:  Checkout Code
