@@ -18,7 +18,7 @@ jobs:
     strategy:
       matrix:
         # Deploy 2 environments, 1 to test with PBX set, one without
-        environment: [ frankfurt, frankfurt-pbx ]
+        environment: [ frankfurt, frankfurt-pbx , london, london-pbx ]
     runs-on: ubuntu-latest
     environment: ${{ matrix.environment }}
 
@@ -59,7 +59,8 @@ jobs:
     - name: Ensure CDK is bootstraped and up to date
       run: cdk bootstrap --ci=true -c accountId=${AWS_ACCOUNT_ID} aws://${AWS_ACCOUNT_ID}/${{ vars.REGION }}
     
-    - name: Destroy Stack if it exists
+    - name: Destroy Stack if it exists for Frankfurt region only
+      if: startsWith(matrix.environment,'frankfurt')
       run: cdk destroy -c accountId=${AWS_ACCOUNT_ID} -c stackName=${{ vars.STACK_NAME }}  -c regionEast=${{ vars.REGION }}  --force --ci=true east
     
     - name: Sleeping for 10 seconds
