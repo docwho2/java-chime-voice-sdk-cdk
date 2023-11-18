@@ -28,7 +28,7 @@ public class ChimeS3PromptBucket extends Bucket {
                 .removalPolicy(RemovalPolicy.DESTROY)
                 .build());
 
-        CfnBucketPolicy bp = new CfnBucketPolicy(this, "PromptBucketPolicy", CfnBucketPolicyProps.builder()
+        new CfnBucketPolicy(this, "PromptBucketPolicy", CfnBucketPolicyProps.builder()
                 .bucket(getBucketName())
                 .policyDocument(PolicyDocument.Builder.create()
                         .statements(List.of(PolicyStatement.Builder.create()

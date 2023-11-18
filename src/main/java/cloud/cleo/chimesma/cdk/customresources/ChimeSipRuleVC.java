@@ -4,7 +4,6 @@
  */
 package cloud.cleo.chimesma.cdk.customresources;
 
-import cloud.cleo.chimesma.cdk.customresources.ChimeSipRule.SipRuleTriggerType;
 import java.util.List;
 import software.amazon.awscdk.Stack;
 

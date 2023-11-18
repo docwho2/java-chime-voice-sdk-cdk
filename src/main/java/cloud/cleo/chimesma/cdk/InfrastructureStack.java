@@ -61,7 +61,7 @@ public class InfrastructureStack extends Stack {
         ChimeVoiceConnector vc = new ChimeVoiceConnector(this,cidrAllowList,PBX_HOSTNAME);
 
         // SIP rule that associates the SMA with the Voice Connector
-        ChimeSipRule sr = new ChimeSipRuleVC(this, vc, List.of(sma));
+        new ChimeSipRuleVC(this, vc, List.of(sma));
         
         new StringParameter(this, "SMA_ID_PARAM" , StringParameterProps.builder()
                 .parameterName("/" + getStackName() + "/SMA_ID")

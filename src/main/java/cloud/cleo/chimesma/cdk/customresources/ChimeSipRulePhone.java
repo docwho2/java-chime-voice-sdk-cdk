@@ -4,7 +4,6 @@
  */
 package cloud.cleo.chimesma.cdk.customresources;
 
-import cloud.cleo.chimesma.cdk.customresources.ChimeSipRule.SipRuleTriggerType;
 import java.util.List;
 import software.amazon.awscdk.Stack;
 
@@ -16,8 +15,8 @@ import software.amazon.awscdk.Stack;
 public abstract class ChimeSipRulePhone extends ChimeSipRule {
 
 
-    public ChimeSipRulePhone(Stack scope, String  phone_e164, List<ChimeSipMediaApp> smas) {
-        super(scope,phone_e164, smas, SipRuleTriggerType.ToPhoneNumber);
+    protected ChimeSipRulePhone(Stack scope, String  phoneE164, List<ChimeSipMediaApp> smas) {
+        super(scope,phoneE164, smas, SipRuleTriggerType.ToPhoneNumber);
     }
 
 }

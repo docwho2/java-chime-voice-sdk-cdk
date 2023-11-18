@@ -5,7 +5,6 @@
 package cloud.cleo.chimesma.cdk.customresources;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import lombok.AllArgsConstructor;
@@ -19,6 +18,7 @@ import software.amazon.awscdk.customresources.PhysicalResourceIdReference;
 import software.amazon.awscdk.customresources.SdkCallsPolicyOptions;
 import software.amazon.awscdk.services.ec2.AclCidr;
 import software.amazon.awscdk.services.iam.PolicyStatement;
+import software.amazon.awscdk.services.logs.RetentionDays;
 
 /**
  *
@@ -62,6 +62,7 @@ public class ChimeVoiceConnector extends AwsCustomResource {
                         .action("DeleteVoiceConnectorCommand")
                         .parameters(Map.of("VoiceConnectorId", new PhysicalResourceIdReference()))
                         .build())
+                .logRetention(RetentionDays.ONE_MONTH)
                 .build());
 
         
@@ -87,7 +88,7 @@ public class ChimeVoiceConnector extends AwsCustomResource {
             termAllow = List.of(AclCidr.anyIpv4());
         }
         
-        final var termination = new AwsCustomResource(scope, ID + "-TERM", AwsCustomResourceProps.builder()
+        new AwsCustomResource(scope, ID + "-TERM", AwsCustomResourceProps.builder()
                 .resourceType("Custom::VoiceConnectorTerm")
                 .installLatestAwsSdk(Boolean.FALSE)
                 .policy(AwsCustomResourcePolicy.fromSdkCalls(SdkCallsPolicyOptions.builder().resources(AwsCustomResourcePolicy.ANY_RESOURCE).build()))
@@ -98,13 +99,14 @@ public class ChimeVoiceConnector extends AwsCustomResource {
                         .parameters(Map.of("VoiceConnectorId", getResponseFieldReference(VC_ID),
                                 "Termination", Map.of("CallingRegions", List.of("US"), "CidrAllowedList", termAllow.stream().map(ta -> ta.toCidrConfig().getCidrBlock()).toList(), "Disabled", false)))
                         .build())
+                .logRetention(RetentionDays.ONE_MONTH)
                 .build());
 
         /**
          * Only need to configure origination if outbound calls are needed for SIP
          */
         if ( pbx != null ) {
-            final var origination = new AwsCustomResource(scope, ID + "-ORIG", AwsCustomResourceProps.builder()
+            new AwsCustomResource(scope, ID + "-ORIG", AwsCustomResourceProps.builder()
                     .resourceType("Custom::VoiceConnectorOrig")
                     .installLatestAwsSdk(Boolean.FALSE)
                     .policy(AwsCustomResourcePolicy.fromSdkCalls(SdkCallsPolicyOptions.builder().resources(AwsCustomResourcePolicy.ANY_RESOURCE).build()))
@@ -115,6 +117,7 @@ public class ChimeVoiceConnector extends AwsCustomResource {
                             .parameters(Map.of("VoiceConnectorId", getResponseFieldReference(VC_ID),
                                     "Origination", Map.of("Routes", List.of(Map.of("Host", pbx, "Port", 5060, "Protocol", "UDP", "Priority", 1, "Weight", 1)), "Disabled", false)))
                             .build())
+                    .logRetention(RetentionDays.ONE_MONTH)
                     .build());
         }
 

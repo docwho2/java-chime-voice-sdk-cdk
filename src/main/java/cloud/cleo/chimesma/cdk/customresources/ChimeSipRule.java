@@ -18,6 +18,7 @@ import software.amazon.awscdk.customresources.AwsSdkCall;
 import software.amazon.awscdk.customresources.PhysicalResourceId;
 import software.amazon.awscdk.customresources.PhysicalResourceIdReference;
 import software.amazon.awscdk.customresources.SdkCallsPolicyOptions;
+import software.amazon.awscdk.services.logs.RetentionDays;
 
 /**
  * Base to support both URI and Phone number rules
@@ -25,14 +26,14 @@ import software.amazon.awscdk.customresources.SdkCallsPolicyOptions;
  * @author sjensen
  */
 public abstract class ChimeSipRule extends AwsCustomResource {
-    private final static AtomicInteger ID_COUNTER = new AtomicInteger(0);
-    private final static String ID = "SR-CR";
+    private static final AtomicInteger ID_COUNTER = new AtomicInteger(0);
+    private static final String ID = "SR-CR";
 
     
     /**
      * The SIP Rule ID in the API response
      */
-    private final static String SR_ID = "SipRule.SipRuleId";
+    private static final String SR_ID = "SipRule.SipRuleId";
 
     protected ChimeSipRule(Stack scope, String triggerValue, List<ChimeSipMediaApp> smas, SipRuleTriggerType type) {
         super(scope, ID + ID_COUNTER.incrementAndGet(), AwsCustomResourceProps.builder()
@@ -56,12 +57,13 @@ public abstract class ChimeSipRule extends AwsCustomResource {
                         .action("DeleteSipRuleCommand")
                         .parameters(Map.of("SipRuleId", new PhysicalResourceIdReference()))
                         .build())
+                .logRetention(RetentionDays.ONE_MONTH)
                 .build());
         
 
     }
 
-    public static enum SipRuleTriggerType {
+    public enum SipRuleTriggerType {
         RequestUriHostname,
         ToPhoneNumber
     }

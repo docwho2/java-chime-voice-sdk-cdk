@@ -19,6 +19,7 @@ import software.amazon.awscdk.customresources.PhysicalResourceIdReference;
 import software.amazon.awscdk.services.iam.PolicyStatement;
 import software.amazon.awscdk.services.lambda.CfnPermission;
 import software.amazon.awscdk.services.lambda.CfnPermissionProps;
+import software.amazon.awscdk.services.logs.RetentionDays;
 
 /**
  *
@@ -26,14 +27,14 @@ import software.amazon.awscdk.services.lambda.CfnPermissionProps;
  */
 public class ChimeSipMediaApp extends AwsCustomResource {
     
-    private final static String ID = "SMA-CR";
-    private final static String ID_PERM = ID + "-PERM";
+    private static final String ID = "SMA-CR";
+    private static final String ID_PERM = ID + "-PERM";
     
     /**
      * The SMA ID in the API response
      */
-    private final static String SMA_ID = "SipMediaApplication.SipMediaApplicationId";
-    private final static String SMA_ARN = "SipMediaApplication.SipMediaApplicationArn";
+    private static final String SMA_ID = "SipMediaApplication.SipMediaApplicationId";
+    private static final String SMA_ARN = "SipMediaApplication.SipMediaApplicationArn";
     
     public ChimeSipMediaApp(Stack scope, Reference lambdaArn) {
         super(scope, ID, AwsCustomResourceProps.builder()
@@ -53,10 +54,11 @@ public class ChimeSipMediaApp extends AwsCustomResource {
                         .action("DeleteSipMediaApplicationCommand")
                         .parameters(Map.of("SipMediaApplicationId", new PhysicalResourceIdReference()))
                         .build())
+                .logRetention(RetentionDays.ONE_MONTH)
                 .build());
         
         // Add permission for Chime to Call the Lambda
-        final var perm = new CfnPermission(scope, ID_PERM, CfnPermissionProps.builder()
+        new CfnPermission(scope, ID_PERM, CfnPermissionProps.builder()
                 .functionName(lambdaArn.toString())
                 .action("lambda:InvokeFunction")
                 .principal("voiceconnector.chime.amazonaws.com")
