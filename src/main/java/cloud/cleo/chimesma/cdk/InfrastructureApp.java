@@ -46,7 +46,7 @@ public final class InfrastructureApp {
 
     static String getParamOrDefault(App app, String param, String defaultValue) {
         final var val = (String) app.getNode().tryGetContext(param);
-         return val.isBlank() ? defaultValue : val;
+         return val == null || val.isBlank() ? defaultValue : val;
     }
     
     static void requireNonEmpty(String string, String message) {
