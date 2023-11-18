@@ -1,7 +1,6 @@
 package cloud.cleo.chimesma.cdk;
 
 import cloud.cleo.chimesma.cdk.customresources.ChimeVoiceConnector;
-import cloud.cleo.chimesma.cdk.customresources.ChimeSipRule;
 import cloud.cleo.chimesma.cdk.customresources.ChimeSipMediaApp;
 import cloud.cleo.chimesma.cdk.customresources.ChimeSipRuleVC;
 import cloud.cleo.chimesma.cdk.resources.ChimeSMAFunction;
