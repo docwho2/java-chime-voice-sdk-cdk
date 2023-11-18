@@ -81,7 +81,7 @@ public class ChimeSMAFunction extends CfnFunction {
 
      // Assocaite log group so we can set a retention
      new LogGroup(scope, id + "-LOG", LogGroupProps.builder()
-        .logGroupName("/aws/lambda/" + this.getFunctionName())
+        .logGroupName("/aws/lambda/" + this.getRef())
         .retention(RetentionDays.ONE_MONTH)
         .removalPolicy(RemovalPolicy.DESTROY)
         .build()
