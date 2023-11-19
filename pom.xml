@@ -41,7 +41,6 @@
         </plugins>
     </build>
     
-    
     <dependencies>
         <!-- AWS Cloud Development Kit -->
         <dependency>
@@ -51,7 +50,6 @@
         </dependency>
 
         <!-- Respective AWS Construct Libraries -->
-
         <dependency>
             <groupId>software.constructs</groupId>
             <artifactId>constructs</artifactId>

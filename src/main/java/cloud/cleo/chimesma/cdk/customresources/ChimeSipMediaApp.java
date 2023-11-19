@@ -8,7 +8,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 import java.util.Map;
 import lombok.AllArgsConstructor;
-import software.amazon.awscdk.Reference;
 import software.amazon.awscdk.Stack;
 import software.amazon.awscdk.customresources.AwsCustomResource;
 import software.amazon.awscdk.customresources.AwsCustomResourcePolicy;
@@ -36,7 +35,7 @@ public class ChimeSipMediaApp extends AwsCustomResource {
     private static final String SMA_ID = "SipMediaApplication.SipMediaApplicationId";
     private static final String SMA_ARN = "SipMediaApplication.SipMediaApplicationArn";
     
-    public ChimeSipMediaApp(Stack scope, Reference lambdaArn) {
+    public ChimeSipMediaApp(Stack scope, String lambdaArn) {
         super(scope, ID, AwsCustomResourceProps.builder()
                 .resourceType("Custom::SipMediaApplication")
                 .installLatestAwsSdk(Boolean.FALSE)
@@ -47,7 +46,7 @@ public class ChimeSipMediaApp extends AwsCustomResource {
                         .service("@aws-sdk/client-chime-sdk-voice")
                         .action("CreateSipMediaApplicationCommand")
                         .physicalResourceId(PhysicalResourceId.fromResponse(SMA_ID))
-                        .parameters(new SMAParameters(scope.getRegion(),scope.getStackName() + "-sma", List.of(new SipMediaApplicationEndpoint(lambdaArn.toString()))))
+                        .parameters(new SMAParameters(scope.getRegion(),scope.getStackName() + "-sma", List.of(new SipMediaApplicationEndpoint(lambdaArn))))
                         .build())
                 .onDelete(AwsSdkCall.builder()
                         .service("@aws-sdk/client-chime-sdk-voice")

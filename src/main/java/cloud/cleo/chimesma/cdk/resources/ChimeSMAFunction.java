@@ -4,32 +4,32 @@
  */
 package cloud.cleo.chimesma.cdk.resources;
 
-import software.amazon.awscdk.RemovalPolicy;
 import software.amazon.awscdk.Stack;
-import software.amazon.awscdk.services.logs.LogGroup;
-import software.amazon.awscdk.services.logs.LogGroupProps;
+import software.amazon.awscdk.services.lambda.Code;
+import software.amazon.awscdk.services.lambda.Function;
+import software.amazon.awscdk.services.lambda.FunctionProps;
+import static software.amazon.awscdk.services.lambda.Runtime.*;
 import software.amazon.awscdk.services.logs.RetentionDays;
-import software.amazon.awscdk.services.sam.CfnFunction;
-import software.amazon.awscdk.services.sam.CfnFunctionProps;
 
 /**
  * Simple SMA Handler that calls speak action to play message and hang up
  *
  * @author sjensen
  */
-public class ChimeSMAFunction extends CfnFunction {
+public class ChimeSMAFunction extends Function {
 
-  /**
-   * @param scope
-   * @param id
-   */
-  public ChimeSMAFunction(Stack scope, String id) {
-    super(scope, id, CfnFunctionProps.builder()
-        .handler("index.handler")
-        .runtime(software.amazon.awscdk.services.lambda.Runtime.NODEJS_LATEST.getName())
-        .build());
-
-    setInlineCode("""
+    /**
+     * @param scope
+     * @param id
+     */
+    public ChimeSMAFunction(Stack scope, String id) {
+        super(scope, id, FunctionProps.builder()
+                .handler("index.handler")
+                .runtime(NODEJS_LATEST)
+                .logRetention(RetentionDays.ONE_MONTH)
+                .description("Hello World Chime SMA Handler that greets and hangs up")
+                .code(Code.fromInline(
+                        """
         exports.handler = async (event, context, callback) => {
           return {
             SchemaVersion: '1.0',
@@ -77,17 +77,9 @@ public class ChimeSMAFunction extends CfnFunction {
           );
           return participantA.CallId;
         };
-                              """);
+                              """))
+                .build());
 
-     // Assocaite log group so we can set a retention
-     new LogGroup(scope, id + "-LOG", LogGroupProps.builder()
-        .logGroupName("/aws/lambda/" + this.getRef())
-        .retention(RetentionDays.ONE_MONTH)
-        .removalPolicy(RemovalPolicy.DESTROY)
-        .build()
-     );
- 
-
-  }
+    }
 
 }
