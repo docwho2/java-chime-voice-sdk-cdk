@@ -50,7 +50,7 @@ To deploy with CDK you must bootstrap the environment in both regions where reso
 
 Example Output:
 ```
-[cloudshell-user@ip-10-6-76-181 java-chime-voice-sdk-cdk]$ ./deploy.bash 
+[cloudshell-user@ip-10-6-76-181 java-chime-voice-sdk-cdk]$ ./deploy.sh
 
 
 ✨  Synthesis time: 14.19s
