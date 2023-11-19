@@ -37,14 +37,14 @@ cd java-chime-voice-sdk-cdk
 To deploy with CDK you must bootstrap the environment in both regions where resources are deployed.
 
 ```bash
-./bootstrap.bash
+./bootstrap.sh
 
 ```
 
 ### Deploy Stacks
 
 ```bash
-./deploy.bash 
+./deploy.sh
 
 ```
 
@@ -228,7 +228,7 @@ arn:aws:cloudformation:us-west-2::stack/chime-sdk-cdk-provisioning/3f32ae40-7b20
 ### Remove Resources and destroy stacks
 
 ```bash
-./destroy.bash
+./destroy.sh
 
 ```
 
