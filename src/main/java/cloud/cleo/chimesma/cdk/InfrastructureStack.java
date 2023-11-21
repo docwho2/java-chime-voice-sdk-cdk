@@ -102,14 +102,13 @@ public class InfrastructureStack extends Stack {
             } else {
                 vc_arn = "PSTN";
             }
-
+        } else {
+            vc = null;
             new StringParameter(this, "VC_ARN_PARAM", StringParameterProps.builder()
                     .parameterName("/" + getStackName() + "/VC_ARN")
                     .description("The ARN for the Voice Connector")
-                    .stringValue(vc_arn)
+                    .stringValue("PSTN")
                     .build());
-        } else {
-            vc = null;
         }
 
     }
