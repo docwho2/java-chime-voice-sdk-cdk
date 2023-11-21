@@ -28,9 +28,12 @@ public class InfrastructureStack extends Stack {
      * If set in the environment, setup Origination to point to it and allow from termination as well
      */
     private final static String PBX_HOSTNAME = System.getenv("PBX_HOSTNAME");
+    private final static String VOICE_CONNECTOR = System.getenv("PBX_HOSTNAME");
 
     private final ChimeVoiceConnector vc;
-    
+
+    private final ChimeSipMediaApp sma;
+
     public InfrastructureStack(final App parent, final String id) {
         this(parent, id, null);
     }
@@ -48,22 +51,7 @@ public class InfrastructureStack extends Stack {
                 .build());
 
         // SMA pointing to lambda handler
-        ChimeSipMediaApp sma = new ChimeSipMediaApp(this, lambda.getFunctionArn());
-
-        // Start with list of Twilio NA ranges for SIP Trunking
-        var cidrAllowList = List.of(AclCidr.ipv4("54.172.60.0/30") , AclCidr.ipv4("54.244.51.0/30"),
-                // Europe, Ireland and Frankfurt
-                AclCidr.ipv4("54.171.127.192/30") , AclCidr.ipv4("35.156.191.128/30") );
-        if (PBX_HOSTNAME != null && !PBX_HOSTNAME.isBlank()) {
-            cidrAllowList = new ArrayList(cidrAllowList);
-            cidrAllowList.add(AclCidr.ipv4(PBX_HOSTNAME + "/32"));
-        }
-
-        // Voice Connector
-        vc = new ChimeVoiceConnector(this, cidrAllowList, PBX_HOSTNAME);
-
-        // SIP rule that associates the SMA with the Voice Connector
-        new ChimeSipRuleVC(this, vc, List.of(sma));
+        sma = new ChimeSipMediaApp(this, lambda.getFunctionArn());
 
         new StringParameter(this, "SMA_ID_PARAM", StringParameterProps.builder()
                 .parameterName("/" + getStackName() + "/SMA_ID")
@@ -76,35 +64,72 @@ public class InfrastructureStack extends Stack {
                 .value(sma.getSMAId())
                 .build());
 
-        new StringParameter(this, "VC_HOSTNAME_PARAM", StringParameterProps.builder()
-                .parameterName("/" + getStackName() + "/VC_HOSTNAME")
-                .description("The Hostname for the Voice Connector")
-                .stringValue(vc.getOutboundName())
-                .build());
+        final boolean hasPBX = PBX_HOSTNAME != null && !PBX_HOSTNAME.isBlank();
+        final boolean hasVC = VOICE_CONNECTOR != null && !VOICE_CONNECTOR.isBlank();
 
-        // If there is no PBX in play for SIP routing, set to PSTN to indicate to SMA Lambda that all transfers are PSTN
-        // IE, no need for VC_ARN to be set
-        String vc_arn;
-        if (PBX_HOSTNAME != null && !PBX_HOSTNAME.isBlank()) {
-            vc_arn = vc.getArn();
+        if (hasVC || hasPBX) {
+            // Start with list of Twilio NA ranges for SIP Trunking
+            var cidrAllowList = List.of(AclCidr.ipv4("54.172.60.0/30"), AclCidr.ipv4("54.244.51.0/30"),
+                    // Europe, Ireland and Frankfurt
+                    AclCidr.ipv4("54.171.127.192/30"), AclCidr.ipv4("35.156.191.128/30"));
+            if (hasPBX) {
+                cidrAllowList = new ArrayList(cidrAllowList);
+                cidrAllowList.add(AclCidr.ipv4(PBX_HOSTNAME + "/32"));
+            }
+
+            // Voice Connector
+            vc = new ChimeVoiceConnector(this, cidrAllowList, PBX_HOSTNAME);
+
+            // SIP rule that associates the SMA with the Voice Connector
+            new ChimeSipRuleVC(this, vc, List.of(sma));
+
+            new StringParameter(this, "VC_HOSTNAME_PARAM", StringParameterProps.builder()
+                    .parameterName("/" + getStackName() + "/VC_HOSTNAME")
+                    .description("The Hostname for the Voice Connector")
+                    .stringValue(vc.getOutboundName())
+                    .build());
+
+            new CfnOutput(this, "VCHOSTNAME", CfnOutputProps.builder()
+                    .description("The Hostname for the Voice Connector")
+                    .value(vc.getOutboundName())
+                    .build());
+
+            // If there is no PBX in play for SIP routing, set to PSTN to indicate to SMA Lambda that all transfers are PSTN
+            // IE, no need for VC_ARN to be set
+            String vc_arn;
+            if (hasPBX) {
+                vc_arn = vc.getArn();
+            } else {
+                vc_arn = "PSTN";
+            }
+
+            new StringParameter(this, "VC_ARN_PARAM", StringParameterProps.builder()
+                    .parameterName("/" + getStackName() + "/VC_ARN")
+                    .description("The ARN for the Voice Connector")
+                    .stringValue(vc_arn)
+                    .build());
         } else {
-            vc_arn = "PSTN";
+            vc = null;
         }
 
-        new StringParameter(this, "VC_ARN_PARAM", StringParameterProps.builder()
-                .parameterName("/" + getStackName() + "/VC_ARN")
-                .description("The ARN for the Voice Connector")
-                .stringValue(vc_arn)
-                .build());
-
-        new CfnOutput(this, "VCHOSTNAME", CfnOutputProps.builder()
-                .description("The Hostname for the Voice Connector")
-                .value(vc.getOutboundName())
-                .build());
     }
-    
+
+    /**
+     * Voice Connector Host Name
+     *
+     * @return
+     */
     public String getVCHostName() {
-        return vc.getOutboundName();
+        return vc == null ? "N/A" : vc.getOutboundName();
+    }
+
+    /**
+     * SIP Media Application ID
+     *
+     * @return
+     */
+    public ChimeSipMediaApp getSMA() {
+        return sma;
     }
 
 }

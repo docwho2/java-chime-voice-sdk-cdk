@@ -12,10 +12,11 @@ import software.amazon.awscdk.Stack;
  * 
  * @author sjensen
  */
-public abstract class ChimeSipRulePhone extends ChimeSipRule {
+public class ChimeSipRulePhone extends ChimeSipRule {
 
+ 
 
-    protected ChimeSipRulePhone(Stack scope, String  phoneE164, List<ChimeSipMediaApp> smas) {
+    public ChimeSipRulePhone(Stack scope, String  phoneE164, List<ChimeSipMediaApp> smas) {
         super(scope,phoneE164, smas, SipRuleTriggerType.ToPhoneNumber);
     }
 

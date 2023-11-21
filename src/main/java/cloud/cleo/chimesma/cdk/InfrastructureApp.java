@@ -1,5 +1,6 @@
 package cloud.cleo.chimesma.cdk;
 
+import java.util.List;
 import software.amazon.awscdk.App;
 import software.amazon.awscdk.Environment;
 import software.amazon.awscdk.StackProps;
@@ -14,6 +15,8 @@ public final class InfrastructureApp {
     private final static String PBX_HOSTNAME = System.getenv("PBX_HOSTNAME");
 
     private final static String TWILIO = System.getenv("TWILIO");
+
+    private final static String CHIME_AREA_CODE = System.getenv("CHIME_AREA_CODE");
     
     public static void main(final String[] args) {
         final var app = new App();
@@ -48,6 +51,17 @@ public final class InfrastructureApp {
                     .build(), east.getVCHostName(), west.getVCHostName());
         }
 
+        // Provision Chime Phone Number if area code provided
+        //
+        if (CHIME_AREA_CODE != null && ! CHIME_AREA_CODE.isBlank()) {
+           new ChimePhoneNumberStack(app, "phone", StackProps.builder()
+                    .description("Provision Chime Phone Number")
+                    .stackName(stackName + "-phone")
+                    .env(makeEnv(accountId, regionEast))
+                    .crossRegionReferences(Boolean.TRUE)
+                    .build(), List.of(east.getSMA(), west.getSMA()));
+        }
+        
         app.synth();
 
     }

@@ -4,6 +4,7 @@
  */
 package cloud.cleo.chimesma.cdk.resources;
 
+import software.amazon.awscdk.Duration;
 import software.amazon.awscdk.Stack;
 import software.amazon.awscdk.services.lambda.Code;
 import software.amazon.awscdk.services.lambda.Function;
@@ -26,7 +27,9 @@ public class ChimeSMAFunction extends Function {
         super(scope, id, FunctionProps.builder()
                 .handler("index.handler")
                 .runtime(NODEJS_LATEST)
+                .functionName(scope.getStackName() + "-SMAHandler")
                 .logRetention(RetentionDays.ONE_MONTH)
+                .timeout(Duration.seconds(5))
                 .description("Hello World Chime SMA Handler that greets and hangs up")
                 .code(Code.fromInline(
                         """

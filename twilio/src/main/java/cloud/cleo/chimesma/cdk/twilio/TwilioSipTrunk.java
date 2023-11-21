@@ -65,6 +65,7 @@ public class TwilioSipTrunk extends AbstractCustomResourceHandler {
             log.error("Create Error",e);
             return Response.builder()
                     .status(Response.Status.FAILED)
+                    .value(e.getMessage())
                     .build();
         }
         return Response.builder()
@@ -98,6 +99,7 @@ public class TwilioSipTrunk extends AbstractCustomResourceHandler {
             log.error("Delete Error",e);
             return Response.builder()
                     .status(Response.Status.FAILED)
+                    .value(e.getMessage())
                     .build();
         }
 
