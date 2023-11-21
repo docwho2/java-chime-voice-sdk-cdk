@@ -16,7 +16,7 @@ for region in "${regions[@]}"; do
 
 echo
 echo "Deleting Log Groups starting with /aws/lambda/${STACK_NAME} in region ${region}"
-declare -a LGS=($(aws logs describe-log-groups --region ${region} --log-group-name-prefix /aws/lambda/${STACK_NAME} --query logGroups[].logGroupName --output text))
+declare -a LGS=($(aws logs describe-log-groups --region ${region} --log-group-name-prefix /aws/lambda/${STACK_NAME:0:24} --query logGroups[].logGroupName --output text))
 for logGroup in "${LGS[@]}"; do
 echo "  Delete Log group [${logGroup}]"
 aws logs delete-log-group --region ${region} --log-group-name "${logGroup}" > /dev/null
