@@ -67,6 +67,7 @@ public class InfrastructureStack extends Stack {
         final boolean hasPBX = PBX_HOSTNAME != null && !PBX_HOSTNAME.isBlank();
         final boolean hasVC = VOICE_CONNECTOR != null && !VOICE_CONNECTOR.isBlank();
 
+        String vc_arn = "PSTN";
         if (hasVC || hasPBX) {
             // Start with list of Twilio NA ranges for SIP Trunking
             var cidrAllowList = List.of(AclCidr.ipv4("54.172.60.0/30"), AclCidr.ipv4("54.244.51.0/30"),
@@ -94,22 +95,16 @@ public class InfrastructureStack extends Stack {
                     .value(vc.getOutboundName())
                     .build());
 
-            // If there is no PBX in play for SIP routing, set to PSTN to indicate to SMA Lambda that all transfers are PSTN
-            // IE, no need for VC_ARN to be set
-            String vc_arn;
-            if (hasPBX) {
-                vc_arn = vc.getArn();
-            } else {
-                vc_arn = "PSTN";
-            }
+            // If VC was created set to ARN otherwise leave at PSTN
+            vc_arn = vc.getArn();
         } else {
             vc = null;
-            new StringParameter(this, "VC_ARN_PARAM", StringParameterProps.builder()
-                    .parameterName("/" + getStackName() + "/VC_ARN")
-                    .description("The ARN for the Voice Connector")
-                    .stringValue("PSTN")
-                    .build());
         }
+        new StringParameter(this, "VC_ARN_PARAM", StringParameterProps.builder()
+                .parameterName("/" + getStackName() + "/VC_ARN")
+                .description("The ARN for the Voice Connector")
+                .stringValue(vc_arn)
+                .build());
 
     }
 
