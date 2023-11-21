@@ -28,7 +28,7 @@ public class InfrastructureStack extends Stack {
      * If set in the environment, setup Origination to point to it and allow from termination as well
      */
     private final static String PBX_HOSTNAME = System.getenv("PBX_HOSTNAME");
-    private final static String VOICE_CONNECTOR = System.getenv("PBX_HOSTNAME");
+    private final static String VOICE_CONNECTOR = System.getenv("VOICE_CONNECTOR");
 
     private final ChimeVoiceConnector vc;
 
