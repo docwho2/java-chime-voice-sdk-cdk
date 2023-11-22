@@ -32,15 +32,6 @@ cd java-chime-voice-sdk-cdk
 
 ```
 
-### Bootstrap CDK 
-
-To deploy with CDK you must bootstrap the environment in both regions where resources are deployed.
-
-```bash
-./bootstrap.sh
-
-```
-
 ### Deploy Stacks
 
 ```bash
