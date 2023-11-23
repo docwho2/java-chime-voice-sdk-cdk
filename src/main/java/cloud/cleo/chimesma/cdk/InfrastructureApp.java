@@ -2,6 +2,7 @@ package cloud.cleo.chimesma.cdk;
 
 import static cloud.cleo.chimesma.cdk.InfrastructureApp.ENV_VARS.*;
 import java.util.List;
+import java.util.Map;
 import software.amazon.awscdk.App;
 import software.amazon.awscdk.Environment;
 import software.amazon.awscdk.StackProps;
@@ -56,15 +57,18 @@ public final class InfrastructureApp extends App {
         String regionEast = getParamOrDefault(app, "regionEast", "us-east-1");
         String regionWest = getParamOrDefault(app, "regionWest", "us-west-2");
 
+        
         final var east = new InfrastructureStack(app, "east", StackProps.builder()
                 .description(STACK_DESC)
                 .stackName(stackName)
+                .tags(Map.of("StackName",stackName))
                 .env(makeStackEnv(accountId, regionEast))
                 .build());
 
         final var west = new InfrastructureStack(app, "west", StackProps.builder()
                 .description(STACK_DESC)
                 .stackName(stackName)
+                .tags(Map.of("StackName",stackName))
                 .env(makeStackEnv(accountId, regionWest))
                 .build());
 
@@ -72,6 +76,7 @@ public final class InfrastructureApp extends App {
             new TwilioStack(app, "twilio", StackProps.builder()
                     .description("Provision Twilio Sip Trunk")
                     .stackName(stackName + "-twilio")
+                    .tags(Map.of("StackName",stackName + "-twilio"))
                     .env(makeStackEnv(accountId, regionEast))
                     .crossRegionReferences(Boolean.TRUE)
                     .build(), east.getVoiceConnector(), west.getVoiceConnector());
@@ -83,6 +88,7 @@ public final class InfrastructureApp extends App {
             new ChimePhoneNumberStack(app, "phone", StackProps.builder()
                     .description("Provision Chime Phone Number")
                     .stackName(stackName + "-phone")
+                    .tags(Map.of("StackName",stackName + "-phone"))
                     .env(makeStackEnv(accountId, regionEast))
                     .crossRegionReferences(Boolean.TRUE)
                     .build(), List.of(east.getSMA(), west.getSMA()));
