@@ -23,10 +23,9 @@ The goal of the project is to develop Custom CDK components in Java that use AWS
 
 Login to AWS Console and open a [Cloud Shell](https://aws.amazon.com/cloudshell/).
 
-### Clone Repo and Install Maven/Java
+### Clone Repo
 
 ```bash
-sudo yum -y install maven
 git clone https://github.com/docwho2/java-chime-voice-sdk-cdk.git
 cd java-chime-voice-sdk-cdk
 

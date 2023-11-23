@@ -1,25 +1,47 @@
 package cloud.cleo.chimesma.cdk;
 
+import static cloud.cleo.chimesma.cdk.InfrastructureApp.ENV_VARS.*;
 import java.util.List;
 import software.amazon.awscdk.App;
 import software.amazon.awscdk.Environment;
 import software.amazon.awscdk.StackProps;
 
-public final class InfrastructureApp {
+public final class InfrastructureApp extends App {
 
     private static final String STACK_DESC = "Provision Chime Voice SDK resources (VoiceConnector, SIP Rule, SIP Media App)";
 
     /**
-     * If set in the environment, setup Origination to point to it and allow from termination as well
+     * Environment Variables used to trigger features
      */
-    private final static String PBX_HOSTNAME = System.getenv("PBX_HOSTNAME");
+    public enum ENV_VARS {
+        /**
+         * If set in the environment, setup Origination to point to Voice Connector and allow from termination as well
+         */
+        PBX_HOSTNAME,
+        /**
+         * Provision Twilio SIP Trunk (experimental)
+         */
+        TWILIO,
+        /**
+         * Attempt to provision a phone number in this area code (US only and experimental)
+         */
+        CHIME_AREA_CODE,
+        /**
+         * Existing Phone number in Chime Voice. This will trigger pointing a SIP rule at this number
+         */
+        CHIME_PHONE_NUMBER,
+        /**
+         * Provision a Voice Connector so SIP calls can be made in and out. Implied if PBX_HOSTNAME set.
+         */
+        VOICE_CONNECTOR,
+        /**
+         * Single IP address to allow to call the Voice Connector (Cannot be private range or will fail)
+         */
+        VOICE_CONNECTOR_ALLOW_IP
+    }
 
-    private final static String TWILIO = System.getenv("TWILIO");
-
-    private final static String CHIME_AREA_CODE = System.getenv("CHIME_AREA_CODE");
-    
     public static void main(final String[] args) {
-        final var app = new App();
+        final var app = new InfrastructureApp();
 
         // Required Param
         String accountId = (String) app.getNode().tryGetContext("accountId");
@@ -33,40 +55,71 @@ public final class InfrastructureApp {
         final var east = new InfrastructureStack(app, "east", StackProps.builder()
                 .description(STACK_DESC)
                 .stackName(stackName)
-                .env(makeEnv(accountId, regionEast))
+                .env(makeStackEnv(accountId, regionEast))
                 .build());
 
         final var west = new InfrastructureStack(app, "west", StackProps.builder()
                 .description(STACK_DESC)
                 .stackName(stackName)
-                .env(makeEnv(accountId, regionWest))
+                .env(makeStackEnv(accountId, regionWest))
                 .build());
 
-        if (TWILIO != null && !TWILIO.isBlank()) {
+        if (hasEnv(TWILIO)) {
             new TwilioStack(app, "twilio", StackProps.builder()
                     .description("Provision Twilio Resources")
                     .stackName(stackName + "-twilio")
-                    .env(makeEnv(accountId, regionEast))
+                    .env(makeStackEnv(accountId, regionEast))
                     .crossRegionReferences(Boolean.TRUE)
                     .build(), east.getVCHostName(), west.getVCHostName());
         }
 
         // Provision Chime Phone Number if area code provided
         //
-        if (CHIME_AREA_CODE != null && ! CHIME_AREA_CODE.isBlank()) {
-           new ChimePhoneNumberStack(app, "phone", StackProps.builder()
+        if (hasEnv(CHIME_AREA_CODE, CHIME_PHONE_NUMBER)) {
+            new ChimePhoneNumberStack(app, "phone", StackProps.builder()
                     .description("Provision Chime Phone Number")
                     .stackName(stackName + "-phone")
-                    .env(makeEnv(accountId, regionEast))
+                    .env(makeStackEnv(accountId, regionEast))
                     .crossRegionReferences(Boolean.TRUE)
                     .build(), List.of(east.getSMA(), west.getSMA()));
         }
-        
+
         app.synth();
 
     }
 
-    static Environment makeEnv(String accountId, String region) {
+    /**
+     * Get the value for one of the ENV variables
+     * @param envVar
+     * @return 
+     */
+    public static String getEnv(ENV_VARS envVar) {
+        return System.getenv(envVar.name());
+    }
+
+    /**
+     * Is any of the provided env vars set (OR condition)
+     *
+     * @param envVars
+     * @return
+     */
+    public static boolean hasEnv(ENV_VARS... envVars) {
+        for (var envVar : envVars) {
+            final var env = getEnv(envVar);
+            if (env != null && !env.isBlank()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Create a Stack Environment
+     * @param accountId
+     * @param region
+     * @return 
+     */
+    static Environment makeStackEnv(String accountId, String region) {
         return Environment.builder()
                 .account(accountId)
                 .region(region)

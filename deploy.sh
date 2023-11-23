@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# Exit immediately if a command exits with a non-zero status.
+set -e
+
+# Stack names and regions
+source config.sh
+
 ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 
 if [ "$AWS_EXECUTION_ENV" = "CloudShell" ]; then

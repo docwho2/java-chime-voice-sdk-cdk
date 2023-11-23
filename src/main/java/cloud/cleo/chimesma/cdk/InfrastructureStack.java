@@ -4,13 +4,12 @@ import cloud.cleo.chimesma.cdk.customresources.ChimeVoiceConnector;
 import cloud.cleo.chimesma.cdk.customresources.ChimeSipMediaApp;
 import cloud.cleo.chimesma.cdk.customresources.ChimeSipRuleVC;
 import cloud.cleo.chimesma.cdk.resources.ChimeSMAFunction;
-import java.util.ArrayList;
+import static cloud.cleo.chimesma.cdk.InfrastructureApp.ENV_VARS.*;
+import static cloud.cleo.chimesma.cdk.InfrastructureApp.hasEnv;
 import java.util.List;
 import software.amazon.awscdk.App;
 import software.amazon.awscdk.CfnOutput;
 import software.amazon.awscdk.CfnOutputProps;
-import software.amazon.awscdk.services.ec2.AclCidr;
-import software.constructs.Construct;
 import software.amazon.awscdk.Stack;
 import software.amazon.awscdk.StackProps;
 import software.amazon.awscdk.services.lambda.Function;
@@ -24,22 +23,16 @@ import software.amazon.awscdk.services.ssm.StringParameterProps;
  */
 public class InfrastructureStack extends Stack {
 
-    /**
-     * If set in the environment, setup Origination to point to it and allow from termination as well
-     */
-    private final static String PBX_HOSTNAME = System.getenv("PBX_HOSTNAME");
-    private final static String VOICE_CONNECTOR = System.getenv("VOICE_CONNECTOR");
-
     private final ChimeVoiceConnector vc;
 
     private final ChimeSipMediaApp sma;
 
-    public InfrastructureStack(final App parent, final String id) {
-        this(parent, id, null);
+    public InfrastructureStack(final App app, final String id) {
+        this(app, id, null);
     }
 
-    public InfrastructureStack(final Construct parent, final String id, final StackProps props) {
-        super(parent, id, props);
+    public InfrastructureStack(final App app, final String id, final StackProps props) {
+        super(app, id, props);
 
         // Simple SMA Handler that speaks prompt and hangs up
         Function lambda = new ChimeSMAFunction(this, "sma-lambda");
@@ -64,22 +57,12 @@ public class InfrastructureStack extends Stack {
                 .value(sma.getSMAId())
                 .build());
 
-        final boolean hasPBX = PBX_HOSTNAME != null && !PBX_HOSTNAME.isBlank();
-        final boolean hasVC = VOICE_CONNECTOR != null && !VOICE_CONNECTOR.isBlank();
 
         String vc_arn = "PSTN";
-        if (hasVC || hasPBX) {
-            // Start with list of Twilio NA ranges for SIP Trunking
-            var cidrAllowList = List.of(AclCidr.ipv4("54.172.60.0/30"), AclCidr.ipv4("54.244.51.0/30"),
-                    // Europe, Ireland and Frankfurt
-                    AclCidr.ipv4("54.171.127.192/30"), AclCidr.ipv4("35.156.191.128/30"));
-            if (hasPBX) {
-                cidrAllowList = new ArrayList(cidrAllowList);
-                cidrAllowList.add(AclCidr.ipv4(PBX_HOSTNAME + "/32"));
-            }
-
+        if  ( hasEnv(VOICE_CONNECTOR,PBX_HOSTNAME) ) {
+            
             // Voice Connector
-            vc = new ChimeVoiceConnector(this, cidrAllowList, PBX_HOSTNAME);
+            vc = new ChimeVoiceConnector(this);
 
             // SIP rule that associates the SMA with the Voice Connector
             new ChimeSipRuleVC(this, vc, List.of(sma));
@@ -93,6 +76,12 @@ public class InfrastructureStack extends Stack {
             new CfnOutput(this, "VCHOSTNAME", CfnOutputProps.builder()
                     .description("The Hostname for the Voice Connector")
                     .value(vc.getOutboundName())
+                    .build());
+            
+            // throw out a SIP URL so you can call it with your favor SIP App (after adding IP to VC manually)
+            new CfnOutput(this, "SIPUri", CfnOutputProps.builder()
+                    .description("SIP Uri to call into the Session Media App")
+                    .value("sip:+17035550122@" + vc.getOutboundName())
                     .build());
 
             // If VC was created set to ARN otherwise leave at PSTN

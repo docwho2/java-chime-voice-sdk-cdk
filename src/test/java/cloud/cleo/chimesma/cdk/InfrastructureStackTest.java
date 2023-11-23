@@ -22,7 +22,7 @@ public class InfrastructureStackTest {
     @BeforeAll
     public static void init() {
         App app = new App();
-        InfrastructureStack stack = new InfrastructureStack(app, "test");
+        InfrastructureStack stack = new InfrastructureStack(app,"test");
         stackJson = JSON.valueToTree(app.synth().getStackArtifact(stack.getArtifactId()).getTemplate());
     }
     
