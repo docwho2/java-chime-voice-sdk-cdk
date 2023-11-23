@@ -22,6 +22,7 @@ import software.amazon.awscdk.services.logs.RetentionDays;
 import static cloud.cleo.chimesma.cdk.InfrastructureApp.ENV_VARS.*;
 import static cloud.cleo.chimesma.cdk.InfrastructureApp.getEnv;
 import static cloud.cleo.chimesma.cdk.InfrastructureApp.hasEnv;
+import static cloud.cleo.chimesma.cdk.InfrastructureApp.hasTwilio;
 import java.util.ArrayList;
 
 /**
@@ -32,6 +33,8 @@ public class ChimeVoiceConnector extends AwsCustomResource {
 
     private final static String ID = "VC-CR";
 
+    private final String region;
+    
     /**
      * The Voice Connector ID in the API response
      */
@@ -57,6 +60,8 @@ public class ChimeVoiceConnector extends AwsCustomResource {
                 .logRetention(RetentionDays.ONE_MONTH)
                 .build());
 
+        region = scope.getRegion();
+        
         /**
          * // Don't enable SIP logging on VC, This can be done manually SIP Logs final var logging = new
          * AwsCustomResource(scope, ID + "-LOG", AwsCustomResourceProps.builder()
@@ -73,7 +78,7 @@ public class ChimeVoiceConnector extends AwsCustomResource {
         var termAllow = new ArrayList<AclCidr>();
 
         // Add Twilio
-        if (hasEnv(PBX_HOSTNAME, TWILIO)) {
+        if (hasEnv(PBX_HOSTNAME) || hasTwilio() ) {
             // Start with list of Twilio NA ranges for SIP Trunking
             termAllow.add(AclCidr.ipv4("54.172.60.0/30"));
             termAllow.add(AclCidr.ipv4("54.244.51.0/30"));
@@ -144,6 +149,10 @@ public class ChimeVoiceConnector extends AwsCustomResource {
 
     public String getOutboundName() {
         return getResponseField("VoiceConnector.OutboundHostName");
+    }
+    
+    public String getRegion() {
+        return region;
     }
 
     /**

@@ -7,6 +7,7 @@ package cloud.cleo.chimesma.cdk.twilio;
 import java.util.Arrays;
 import static java.util.Collections.singletonList;
 import java.util.List;
+import java.util.Map;
 import software.amazon.awscdk.BundlingOptions;
 import software.amazon.awscdk.BundlingOutput;
 import software.amazon.awscdk.DockerVolume;
@@ -18,6 +19,9 @@ import software.amazon.awscdk.services.lambda.FunctionProps;
 import static software.amazon.awscdk.services.lambda.Runtime.*;
 import software.amazon.awscdk.services.logs.RetentionDays;
 import software.amazon.awscdk.services.s3.assets.AssetOptions;
+import static cloud.cleo.chimesma.cdk.InfrastructureApp.ENV_VARS.*;
+import cloud.cleo.chimesma.cdk.InfrastructureApp;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Base class for all Twilio Custom Resource Lambda's
@@ -26,16 +30,16 @@ import software.amazon.awscdk.services.s3.assets.AssetOptions;
  */
 public abstract class TwilioBase extends Function {
 
-
+    private static final AtomicInteger ID_COUNTER = new AtomicInteger(0);
     private static final BundlingOptions builderOptions;
 
     static {
         List<String> functionOnePackagingInstructions = Arrays.asList(
                 "/bin/sh",
                 "-c",
-                 "mvn clean install && cp /asset-input/target/twilio.jar /asset-output/");
+                "mvn clean install && cp /asset-input/target/twilio.jar /asset-output/");
 
-         builderOptions = BundlingOptions.builder()
+        builderOptions = BundlingOptions.builder()
                 .command(functionOnePackagingInstructions)
                 .image(JAVA_17.getBundlingImage())
                 .user("root")
@@ -48,25 +52,28 @@ public abstract class TwilioBase extends Function {
      * @param scope
      */
     protected TwilioBase(Stack scope, Class c) {
-        super(scope, c.getSimpleName(), FunctionProps.builder()
+        super(scope, c.getSimpleName() + ID_COUNTER.incrementAndGet(), FunctionProps.builder()
                 .handler(c.getName())
                 .runtime(JAVA_17)
                 .description(c.getSimpleName() + " Provisioning Lambda")
                 .timeout(Duration.seconds(30))
                 .logRetention(RetentionDays.ONE_MONTH)
                 .maxEventAge(Duration.seconds(60))
-                .timeout(Duration.seconds(30))
+                .timeout(Duration.minutes(5))
                 .retryAttempts(0)
                 .memorySize(512)
                 .code(getCode())
+                .environment(Map.of(TWILIO_ACCOUNT_SID.toString(), InfrastructureApp.getEnv(TWILIO_ACCOUNT_SID),
+                        TWILIO_AUTH_TOKEN.toString(), InfrastructureApp.getEnv(TWILIO_AUTH_TOKEN)))
                 .build());
-       
 
     }
-    
+
     protected static Code getCode() {
         return Code.fromAsset("./twilio", AssetOptions.builder()
                 .bundling(builderOptions).build());
     }
+    
+    public abstract String getSid();
 
 }

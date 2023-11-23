@@ -19,10 +19,6 @@ public final class InfrastructureApp extends App {
          */
         PBX_HOSTNAME,
         /**
-         * Provision Twilio SIP Trunk (experimental)
-         */
-        TWILIO,
-        /**
          * Attempt to provision a phone number in this area code (US only and experimental)
          */
         CHIME_AREA_CODE,
@@ -37,7 +33,13 @@ public final class InfrastructureApp extends App {
         /**
          * Single IP address to allow to call the Voice Connector (Cannot be private range or will fail)
          */
-        VOICE_CONNECTOR_ALLOW_IP
+        VOICE_CONNECTOR_ALLOW_IP,
+        
+        /**
+         * Twilio Keys, provisions SIP Trunk if both present
+         */
+        TWILIO_ACCOUNT_SID,
+        TWILIO_AUTH_TOKEN
     }
 
     public static void main(final String[] args) {
@@ -64,13 +66,13 @@ public final class InfrastructureApp extends App {
                 .env(makeStackEnv(accountId, regionWest))
                 .build());
 
-        if (hasEnv(TWILIO)) {
+        if (hasTwilio()) {
             new TwilioStack(app, "twilio", StackProps.builder()
-                    .description("Provision Twilio Resources")
+                    .description("Provision Twilio Sip Trunk")
                     .stackName(stackName + "-twilio")
                     .env(makeStackEnv(accountId, regionEast))
                     .crossRegionReferences(Boolean.TRUE)
-                    .build(), east.getVCHostName(), west.getVCHostName());
+                    .build(), east.getVoiceConnector(), west.getVoiceConnector());
         }
 
         // Provision Chime Phone Number if area code provided
@@ -88,6 +90,10 @@ public final class InfrastructureApp extends App {
 
     }
 
+    public static boolean hasTwilio() {
+        return hasEnv(TWILIO_ACCOUNT_SID) && hasEnv(TWILIO_AUTH_TOKEN);
+    }
+    
     /**
      * Get the value for one of the ENV variables
      * @param envVar

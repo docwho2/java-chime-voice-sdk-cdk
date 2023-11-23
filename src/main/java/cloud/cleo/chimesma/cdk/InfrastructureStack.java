@@ -59,7 +59,7 @@ public class InfrastructureStack extends Stack {
 
 
         String vc_arn = "PSTN";
-        if  ( hasEnv(VOICE_CONNECTOR,PBX_HOSTNAME) ) {
+        if  ( hasEnv(VOICE_CONNECTOR,PBX_HOSTNAME,TWILIO_ACCOUNT_SID) ) {
             
             // Voice Connector
             vc = new ChimeVoiceConnector(this);
@@ -98,12 +98,12 @@ public class InfrastructureStack extends Stack {
     }
 
     /**
-     * Voice Connector Host Name
+     * Voice Connector or null if it was never created
      *
      * @return
      */
-    public String getVCHostName() {
-        return vc == null ? "N/A" : vc.getOutboundName();
+    public ChimeVoiceConnector getVoiceConnector() {
+        return vc;
     }
 
     /**

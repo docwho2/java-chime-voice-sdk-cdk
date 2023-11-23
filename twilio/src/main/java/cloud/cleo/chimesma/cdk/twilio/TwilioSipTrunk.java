@@ -4,9 +4,7 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.CloudFormationCustomResourceEvent;
 import com.twilio.Twilio;
 import com.twilio.rest.trunking.v1.Trunk;
-import com.twilio.rest.trunking.v1.trunk.OriginationUrl;
-import java.net.URI;
-import java.util.Map;
+import java.util.UUID;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import software.amazon.lambda.powertools.cloudformation.AbstractCustomResourceHandler;
@@ -21,91 +19,55 @@ public class TwilioSipTrunk extends AbstractCustomResourceHandler {
     // Initialize the Log4j logger.
     static final Logger log = LogManager.getLogger(TwilioSipTrunk.class);
 
+    static {
+        Twilio.init(System.getenv("TWILIO_ACCOUNT_SID"), System.getenv("TWILIO_AUTH_TOKEN"));
+    }
+
     @Override
     protected Response create(CloudFormationCustomResourceEvent cfcre, Context cntxt) {
         log.debug("Received CREATE Event from Cloudformation", cfcre);
 
-        String sid = null;
-
+        var sid = UUID.randomUUID().toString();
         try {
 
-            Trunk trunk = Trunk.creator()
-                    .setFriendlyName(cfcre.getStackId())
+            final var trunk = Trunk.creator()
+                    .setFriendlyName("Chime VoiceConnector")
                     .create();
 
             sid = trunk.getSid();
-            
-            var props = cfcre.getResourceProperties();
-            
-            OriginationUrl.creator(
-                sid,
-                10,
-                10,
-                true,
-                "Chime Voice " + props.get("vcEastRegion"),
-                URI.create("sip:" + props.get("vcEast") + ";edge=ashburn"))
-            .create();
-            
-            
-            OriginationUrl.creator(
-                sid,
-                10,
-                10,
-                true,
-                "Chime Voice " + props.get("vcWestRegion"),
-                URI.create("sip:" + props.get("vcWest") + ";edge=umatilla"))
-            .create();
-           
-            
-
             log.debug("SIP Trunk created with SID " + sid);
 
-            
         } catch (Exception e) {
-            log.error("Create Error",e);
-            return Response.builder()
-                    .status(Response.Status.FAILED)
-                    .value(e.getMessage())
-                    .build();
+            log.error("Create Error", e);
+            return Response.failed(sid);
         }
-        return Response.builder()
-                .value(Map.of("operation", "success"))
-                .physicalResourceId(sid)
-                .build();
+        return Response.success(sid);
     }
 
     @Override
     protected Response update(CloudFormationCustomResourceEvent cfcre, Context cntxt) {
         log.debug("Received UPDATE Event from Cloudformation", cfcre);
-        // No Update support, we can return null
-        return null;
+        return Response.success(cfcre.getPhysicalResourceId());
     }
 
     @Override
     protected Response delete(CloudFormationCustomResourceEvent cfcre, Context cntxt) {
         log.debug("Received DELETE Event from Cloudformation", cfcre);
-        log.debug("Deleting SID " + cfcre.getPhysicalResourceId());
 
+        final var sid = cfcre.getPhysicalResourceId();
+        log.debug("Deleting SID " + sid);
         try {
-      
-
-            if (!Trunk.deleter(cfcre.getPhysicalResourceId()).delete()) {
+            if (!Trunk.deleter(sid).delete()) {
                 throw new RuntimeException("Could Not Delete SIP Trunk");
             }
-
-            log.debug("SIP Trunk deleted with SID " + cfcre.getPhysicalResourceId());
+            log.debug("SIP Trunk deleted with SID " + sid);
 
         } catch (Exception e) {
-            log.error("Delete Error",e);
-            return Response.builder()
-                    .status(Response.Status.FAILED)
-                    .value(e.getMessage())
-                    .build();
+            log.error("Delete Error", e);
+            return Response.failed(sid);
         }
 
-        return Response.builder()
-                .value(Map.of("operation", "success"))
-                .build();
+        return Response.success(sid);
     }
 
 }
