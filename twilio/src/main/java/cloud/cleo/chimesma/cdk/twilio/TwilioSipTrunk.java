@@ -3,6 +3,7 @@ package cloud.cleo.chimesma.cdk.twilio;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.CloudFormationCustomResourceEvent;
 import com.twilio.Twilio;
+
 import com.twilio.rest.trunking.v1.Trunk;
 import java.util.UUID;
 import org.apache.logging.log4j.LogManager;
@@ -23,13 +24,14 @@ public class TwilioSipTrunk extends AbstractCustomResourceHandler {
         Twilio.init(System.getenv("TWILIO_ACCOUNT_SID"), System.getenv("TWILIO_AUTH_TOKEN"));
     }
 
+
     @Override
     protected Response create(CloudFormationCustomResourceEvent cfcre, Context cntxt) {
         log.debug("Received CREATE Event from Cloudformation", cfcre);
 
         var sid = UUID.randomUUID().toString();
         try {
-
+            
             final var trunk = Trunk.creator()
                     .setFriendlyName("Chime VoiceConnector")
                     .create();

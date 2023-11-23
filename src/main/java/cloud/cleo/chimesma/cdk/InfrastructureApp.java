@@ -39,7 +39,9 @@ public final class InfrastructureApp extends App {
          * Twilio Keys, provisions SIP Trunk if both present
          */
         TWILIO_ACCOUNT_SID,
-        TWILIO_AUTH_TOKEN
+        TWILIO_AUTH_TOKEN,
+        // Existing Phone number to point to Trunk
+        TWILIO_PHONE_NUMBER_SID
     }
 
     public static void main(final String[] args) {

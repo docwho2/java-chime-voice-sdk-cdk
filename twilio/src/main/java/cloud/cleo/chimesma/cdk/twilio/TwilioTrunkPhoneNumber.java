@@ -3,8 +3,8 @@ package cloud.cleo.chimesma.cdk.twilio;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.CloudFormationCustomResourceEvent;
 import com.twilio.Twilio;
-import com.twilio.rest.trunking.v1.trunk.OriginationUrl;
-import java.net.URI;
+
+import com.twilio.rest.trunking.v1.trunk.PhoneNumber;
 import java.util.UUID;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -12,53 +12,36 @@ import software.amazon.lambda.powertools.cloudformation.AbstractCustomResourceHa
 import software.amazon.lambda.powertools.cloudformation.Response;
 
 /**
- *
+ * Associated Phone Number to Trunk and Unassociated
  * @author sjensen
  */
-public class TwilioOriginationUrl extends AbstractCustomResourceHandler {
+public class TwilioTrunkPhoneNumber extends AbstractCustomResourceHandler {
 
     // Initialize the Log4j logger.
-    static final Logger log = LogManager.getLogger(TwilioOriginationUrl.class);
+    static final Logger log = LogManager.getLogger(TwilioTrunkPhoneNumber.class);
 
     static {
         Twilio.init(System.getenv("TWILIO_ACCOUNT_SID"), System.getenv("TWILIO_AUTH_TOKEN"));
     }
 
+
     @Override
     protected Response create(CloudFormationCustomResourceEvent cfcre, Context cntxt) {
         log.debug("Received CREATE Event from Cloudformation", cfcre);
 
+        
         var sid = UUID.randomUUID().toString();
         
         try {
             final var props = cfcre.getResourceProperties();
-
             final var trunkSid = props.get("trunkSid").toString();
-            final var voiceConnector = props.get("voiceConnector").toString();
-            final var region = props.get("region").toString();
+            final var phoneSid = props.get("phoneSid").toString();
             
-            final var edge = switch(region) {
-                case "us-east-1" -> ";edge=ashburn";
-                case "us-west-2" -> ";edge=umatilla";
-                default -> "";
-            };
-            
-            final Integer priority = switch(region) {
-                case "us-east-1" -> 1;
-                case "us-west-2" -> 2;
-                default -> 10;
-            };
-            
-            sid = OriginationUrl.creator(
-                    trunkSid,
-                    10,
-                    priority,
-                    true,
-                    "Chime Voice " + region,
-                    URI.create("sip:" + voiceConnector + edge))
-                    .create().getSid();
+            var phoneAssoc = PhoneNumber.creator(trunkSid, phoneSid).create();
+          
 
-            log.debug("Orig URL created with SID " + sid);
+            sid = phoneAssoc.getSid();
+            log.debug("Phone association created with SID " + sid);
 
         } catch (Exception e) {
             log.error("Create Error", e);
@@ -70,10 +53,7 @@ public class TwilioOriginationUrl extends AbstractCustomResourceHandler {
     @Override
     protected Response update(CloudFormationCustomResourceEvent cfcre, Context cntxt) {
         log.debug("Received UPDATE Event from Cloudformation", cfcre);
-        
-       
-        // No Update support, we can return null
-        return null;
+        return Response.success(cfcre.getPhysicalResourceId());
     }
 
     @Override
@@ -81,15 +61,17 @@ public class TwilioOriginationUrl extends AbstractCustomResourceHandler {
         log.debug("Received DELETE Event from Cloudformation", cfcre);
 
         final var sid = cfcre.getPhysicalResourceId();
-        final var trunkSid = cfcre.getResourceProperties().get("trunkSid").toString();
-        log.debug("Deleting Orig URL SID " + sid);
+        log.debug("Deleting SID " + sid);
         try {
-
-            if (!OriginationUrl.deleter(trunkSid,sid).delete()) {
-                throw new RuntimeException("Could Not Delete Orig Url");
+            
+            final var props = cfcre.getResourceProperties();
+            final var trunkSid = props.get("trunkSid").toString();
+            final var phoneSid = props.get("phoneSid").toString();
+            
+            if (!PhoneNumber.deleter(trunkSid, phoneSid).delete()) {
+                throw new RuntimeException("Could Not Delete Phone Association");
             }
-
-            log.debug("Orig URL deleted with SID " + sid);
+            log.debug("Phone Association deleted with SID " + sid);
 
         } catch (Exception e) {
             log.error("Delete Error", e);

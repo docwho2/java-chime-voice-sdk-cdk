@@ -27,6 +27,11 @@ public class TwilioStack extends Stack {
         // Set the Orig entries to the VC's
         new TwilioOriginationUrl(this, sipTrunk.getSid(), vc1);
         new TwilioOriginationUrl(this, sipTrunk.getSid(), vc2);
+        
+        // Associate Phone to Trunk if SID provided
+        if ( InfrastructureApp.hasEnv(InfrastructureApp.ENV_VARS.TWILIO_PHONE_NUMBER_SID) ) {
+            new TwilioTrunkPhoneNumber(this, sipTrunk.getSid(), InfrastructureApp.getEnv(InfrastructureApp.ENV_VARS.TWILIO_PHONE_NUMBER_SID));
+        }
     }
 
 }
