@@ -37,7 +37,7 @@ public abstract class TwilioBase extends Function {
         List<String> functionOnePackagingInstructions = Arrays.asList(
                 "/bin/sh",
                 "-c",
-                "mvn clean install && cp /asset-input/target/twilio.jar /asset-output/");
+                "mvn --quiet clean install && cp /asset-input/target/twilio.jar /asset-output/");
 
         builderOptions = BundlingOptions.builder()
                 .command(functionOnePackagingInstructions)

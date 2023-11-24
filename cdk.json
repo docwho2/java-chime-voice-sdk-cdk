@@ -1,5 +1,5 @@
 {
-  "app": "mvn -e -q compile exec:java",
+  "app": "mvn --errors --quiet compile exec:java",
   "context": {
   }
 }
