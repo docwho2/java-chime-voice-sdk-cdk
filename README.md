@@ -7,10 +7,10 @@ This project deploys a simple [SIP Media Application](https://docs.aws.amazon.co
 
 The goal of the project is to develop Custom CDK components in Java that use AWS API's to provision Chime SDK resources to multiple regions in parallel along with GitHub actions to both validate template creation as well as deploy.
 
-For a full working example of using this project, check out (Amazon Chime SMA ChatGPT IVR for Square Retail)[https://github.com/docwho2/java-squareup-chatgpt-ivr].
+For a full working example of using this project, check out [Amazon Chime SMA ChatGPT IVR for Square Retail](https://github.com/docwho2/java-squareup-chatgpt-ivr).
 - This CDK project deploys all Chime Voice and Twilio components
 - SAM is then used to deploy SMA application to multiple regions
-- Check out the (Work Flow)[https://github.com/docwho2/java-squareup-chatgpt-ivr/blob/main/.github/workflows/deploy.yml]
+- Check out the [Work Flow](https://github.com/docwho2/java-squareup-chatgpt-ivr/blob/main/.github/workflows/deploy.yml)
 - To include in your project bring it in as a submodule (like above project)
     - git submodule add https://github.com/docwho2/java-chime-voice-sdk-cdk.git ChimeCDKProvsion
         - replace ChimeCDKProvsion with whatever you want the sub directory in your project if you don't like above
