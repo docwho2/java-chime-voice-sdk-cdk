@@ -33,7 +33,7 @@ For a full working example of using this project, check out [Amazon Chime SMA Ch
         - Existing Phone number associated to created Trunk if SID provided
             - Easier to Provision phone ahead of time, then you can deploy and destory as many times as you want and number is intact.
     - Chime PSTN Numbers
-        - Can provision phone numbers when area code supplied (experiemental)
+        - Can provision phone numbers when area code supplied
         - Creates SIP rule for PSTN numbers pointing to SMA's in both regions
         - Existing phone number support that will associate and dissassociate to SIP Rule
 - GitHub Workflow Examples for validating and deploying
@@ -56,25 +56,29 @@ From (Infrastructure App)[src/main/java/cloud/cleo/chimesma/cdk/InfrastructureAp
          * If set in the environment, setup Origination to point to in Voice Connector and allow from termination as well
          */
         PBX_HOSTNAME,
+        
         /**
-         * Attempt to provision a phone number in this area code (US only and experimental)
+         * Attempt to provision a phone number in this area code (US Only)
          */
         CHIME_AREA_CODE,
+        
         /**
          * Existing Phone number in Chime Voice. This will trigger pointing a SIP rule at this number
          */
         CHIME_PHONE_NUMBER,
+        
         /**
          * Provision a Voice Connector so SIP calls can be made in and out. Implied if PBX_HOSTNAME set.
          */
         VOICE_CONNECTOR,
+        
         /**
          * Single IP address to allow to call the Voice Connector (Cannot be private range or will fail)
          */
         VOICE_CONNECTOR_ALLOW_IP,
         
         /**
-         * Twilio Keys, provisions SIP Trunk if both present
+         * Twilio Keys, provisions SIP Trunk if both present, points to Chime VC's and allows Twilio IP's to the VC's
          */
         TWILIO_ACCOUNT_SID,
         TWILIO_AUTH_TOKEN,

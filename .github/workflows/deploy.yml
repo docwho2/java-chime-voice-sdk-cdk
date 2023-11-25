@@ -17,7 +17,7 @@ permissions:
 concurrency: deploy
 
 jobs:
-  build:
+  deploy:
     strategy:
       matrix:
         environment: [ frankfurt, frankfurt-pbx , london, london-pbx ]
