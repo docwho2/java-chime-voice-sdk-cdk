@@ -27,4 +27,4 @@ fi
 cdk bootstrap aws://${ACCOUNT_ID}/us-east-1 -c accountId=${ACCOUNT_ID}
 cdk bootstrap aws://${ACCOUNT_ID}/us-west-2 -c accountId=${ACCOUNT_ID}
 
-cdk deploy -c accountId=${ACCOUNT_ID} -c stackName=${CDK_STACK_NAME} -c regionEast=${regions[0]} -c regionWest=${regions[1]} --concurrency=4 --all --require-approval=never
+cdk deploy -c accountId=${ACCOUNT_ID} -c stackName=${STACK_NAME} -c regionEast=${regions[0]} -c regionWest=${regions[1]} --concurrency=4 --all --require-approval=never

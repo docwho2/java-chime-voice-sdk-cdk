@@ -19,11 +19,11 @@ public final class InfrastructureApp extends App {
          */
         PBX_HOSTNAME,
         /**
-         * Attempt to provision a phone number in this area code (US only and experimental)
+         * Provision a phone number in this area code (make sure you use an area code that has numbers in pool)
          */
         CHIME_AREA_CODE,
         /**
-         * Existing Phone number in Chime Voice. This will trigger pointing a SIP rule at this number
+         * Existing Phone number in Chime Voice. This will trigger pointing a SIP rule at this number for the SMA's
          */
         CHIME_PHONE_NUMBER,
         /**
@@ -31,12 +31,12 @@ public final class InfrastructureApp extends App {
          */
         VOICE_CONNECTOR,
         /**
-         * Single IP address to allow to call the Voice Connector (Cannot be private range or will fail)
+         * Single IP address to allow to call the Voice Connector (Cannot be private range or will fail).  Also implies VC will be created
          */
         VOICE_CONNECTOR_ALLOW_IP,
         
         /**
-         * Twilio Keys, provisions SIP Trunk if both present
+         * Twilio Keys, provisions Twilio SIP Trunk if both present
          */
         TWILIO_ACCOUNT_SID,
         TWILIO_AUTH_TOKEN,

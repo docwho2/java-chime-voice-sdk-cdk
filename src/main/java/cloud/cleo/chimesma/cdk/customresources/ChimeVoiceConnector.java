@@ -34,7 +34,7 @@ public class ChimeVoiceConnector extends AwsCustomResource {
     private final static String ID = "VC-CR";
 
     private final String region;
-    
+
     /**
      * The Voice Connector ID in the API response
      */
@@ -61,7 +61,7 @@ public class ChimeVoiceConnector extends AwsCustomResource {
                 .build());
 
         region = scope.getRegion();
-        
+
         /**
          * // Don't enable SIP logging on VC, This can be done manually SIP Logs final var logging = new
          * AwsCustomResource(scope, ID + "-LOG", AwsCustomResourceProps.builder()
@@ -74,11 +74,11 @@ public class ChimeVoiceConnector extends AwsCustomResource {
          * "EnableMediaMetricLogs", false))) .build()) .build());
          */
         //
-        // IP ranges to all to call into the VC
+        // IP ranges to allow to call into the VC
         var termAllow = new ArrayList<AclCidr>();
 
         // Add Twilio
-        if (hasEnv(PBX_HOSTNAME) || hasTwilio() ) {
+        if (hasEnv(PBX_HOSTNAME) || hasTwilio()) {
             // Start with list of Twilio NA ranges for SIP Trunking
             termAllow.add(AclCidr.ipv4("54.172.60.0/30"));
             termAllow.add(AclCidr.ipv4("54.244.51.0/30"));
@@ -98,29 +98,36 @@ public class ChimeVoiceConnector extends AwsCustomResource {
             termAllow.add(AclCidr.ipv4(getEnv(VOICE_CONNECTOR_ALLOW_IP) + "/32"));
         }
 
-        // If nothing at this point, just throw something in there so termination can be enabled, because something must be set
-        if (termAllow.isEmpty()) {
-            termAllow.add(AclCidr.ipv4("162.216.219.160/27"));
-        }
+        // If nothing set, then we don't need termination
+        if (!termAllow.isEmpty()) {
 
-        new AwsCustomResource(scope, ID + "-TERM", AwsCustomResourceProps.builder()
-                .resourceType("Custom::VoiceConnectorTerm")
-                .installLatestAwsSdk(Boolean.FALSE)
-                .policy(AwsCustomResourcePolicy.fromSdkCalls(SdkCallsPolicyOptions.builder().resources(AwsCustomResourcePolicy.ANY_RESOURCE).build()))
-                .onCreate(AwsSdkCall.builder()
-                        .service("@aws-sdk/client-chime-sdk-voice")
-                        .action("PutVoiceConnectorTerminationCommand")
-                        .physicalResourceId(PhysicalResourceId.of("termination"))
-                        .parameters(Map.of("VoiceConnectorId", getResponseFieldReference(VC_ID),
-                                "Termination", Map.of("CallingRegions", List.of("US"), "CidrAllowedList", termAllow.stream().map(ta -> ta.toCidrConfig().getCidrBlock()).toList(), "Disabled", false)))
-                        .build())
-                .logRetention(RetentionDays.ONE_MONTH)
-                .build());
+            new AwsCustomResource(scope, ID + "-TERM", AwsCustomResourceProps.builder()
+                    .resourceType("Custom::VoiceConnectorTerm")
+                    .installLatestAwsSdk(Boolean.FALSE)
+                    .policy(AwsCustomResourcePolicy.fromSdkCalls(SdkCallsPolicyOptions.builder().resources(AwsCustomResourcePolicy.ANY_RESOURCE).build()))
+                    .onCreate(AwsSdkCall.builder()
+                            .service("@aws-sdk/client-chime-sdk-voice")
+                            .action("PutVoiceConnectorTerminationCommand")
+                            .physicalResourceId(PhysicalResourceId.of(getId() + "term"))
+                            .parameters(Map.of("VoiceConnectorId", getId(),
+                                    "Termination", Map.of("CallingRegions", List.of("US"), "CidrAllowedList", termAllow.stream().map(ta -> ta.toCidrConfig().getCidrBlock()).toList(), "Disabled", false)))
+                            .build())
+                    .onUpdate(AwsSdkCall.builder()
+                            .service("@aws-sdk/client-chime-sdk-voice")
+                            .action("PutVoiceConnectorTerminationCommand")
+                            .physicalResourceId(PhysicalResourceId.of(getId() + "term"))
+                            .parameters(Map.of("VoiceConnectorId", getId(),
+                                    "Termination", Map.of("CallingRegions", List.of("US"), "CidrAllowedList", termAllow.stream().map(ta -> ta.toCidrConfig().getCidrBlock()).toList(), "Disabled", false)))
+                            .build())
+                    .logRetention(RetentionDays.ONE_MONTH)
+                    .build());
+        }
 
         /**
          * Only need to configure origination if outbound calls are needed for SIP
          */
         if (hasEnv(PBX_HOSTNAME)) {
+            final var routes = List.of(Map.of("Host", getEnv(PBX_HOSTNAME), "Port", 5060, "Protocol", "UDP", "Priority", 1, "Weight", 1));
             new AwsCustomResource(scope, ID + "-ORIG", AwsCustomResourceProps.builder()
                     .resourceType("Custom::VoiceConnectorOrig")
                     .installLatestAwsSdk(Boolean.FALSE)
@@ -128,9 +135,16 @@ public class ChimeVoiceConnector extends AwsCustomResource {
                     .onCreate(AwsSdkCall.builder()
                             .service("@aws-sdk/client-chime-sdk-voice")
                             .action("PutVoiceConnectorOriginationCommand")
-                            .physicalResourceId(PhysicalResourceId.of("origination"))
-                            .parameters(Map.of("VoiceConnectorId", getResponseFieldReference(VC_ID),
-                                    "Origination", Map.of("Routes", List.of(Map.of("Host", getEnv(PBX_HOSTNAME), "Port", 5060, "Protocol", "UDP", "Priority", 1, "Weight", 1)), "Disabled", false)))
+                            .physicalResourceId(PhysicalResourceId.of(getId() + "orig"))
+                            .parameters(Map.of("VoiceConnectorId", getId(),
+                                    "Origination", Map.of("Routes", routes)))
+                            .build())
+                    .onUpdate(AwsSdkCall.builder()
+                            .service("@aws-sdk/client-chime-sdk-voice")
+                            .action("PutVoiceConnectorOriginationCommand")
+                            .physicalResourceId(PhysicalResourceId.of(getId() + "orig"))
+                            .parameters(Map.of("VoiceConnectorId", getId(),
+                                    "Origination", Map.of("Routes", routes)))
                             .build())
                     .logRetention(RetentionDays.ONE_MONTH)
                     .build());
@@ -147,10 +161,19 @@ public class ChimeVoiceConnector extends AwsCustomResource {
         return getResponseField(VC_ARN);
     }
 
+    /**
+     * Voice Connector ID
+     *
+     * @return
+     */
+    private String getId() {
+        return getResponseField(VC_ID);
+    }
+
     public String getOutboundName() {
         return getResponseField("VoiceConnector.OutboundHostName");
     }
-    
+
     public String getRegion() {
         return region;
     }

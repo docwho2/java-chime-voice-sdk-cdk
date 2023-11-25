@@ -34,6 +34,7 @@ public class ChimeSipMediaApp extends AwsCustomResource {
      */
     private static final String SMA_ID = "SipMediaApplication.SipMediaApplicationId";
     private static final String SMA_ARN = "SipMediaApplication.SipMediaApplicationArn";
+    private static final String SMA_REGION = "SipMediaApplication.AwsRegion";
     
     public ChimeSipMediaApp(Stack scope, String lambdaArn) {
         super(scope, ID, AwsCustomResourceProps.builder()
@@ -58,7 +59,7 @@ public class ChimeSipMediaApp extends AwsCustomResource {
         
         // Add permission for Chime to Call the Lambda
         new CfnPermission(scope, ID_PERM, CfnPermissionProps.builder()
-                .functionName(lambdaArn.toString())
+                .functionName(lambdaArn)
                 .action("lambda:InvokeFunction")
                 .principal("voiceconnector.chime.amazonaws.com")
                 .sourceAccount(scope.getAccount())
@@ -79,7 +80,7 @@ public class ChimeSipMediaApp extends AwsCustomResource {
     }
     
     public String getRegion() {
-        return getResponseField("SipMediaApplication.AwsRegion");
+        return getResponseField(SMA_REGION);
     }
     
     /**

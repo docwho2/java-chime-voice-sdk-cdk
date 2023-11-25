@@ -18,7 +18,7 @@ import static software.amazon.awscdk.services.lambda.Runtime.*;
 import software.amazon.awscdk.services.logs.RetentionDays;
 
 /**
- * Simple SMA Handler that calls speak action to play message and hang up
+ * Given a phone OrderId wait on status to be Successful for up to 15 minutes which is mac lambda runtime
  *
  * 
  
@@ -54,9 +54,9 @@ public class ChimeWaitForNumber extends Function {
                 .handler("index.handler")
                 .runtime(NODEJS_LATEST)
                 .logRetention(RetentionDays.ONE_MONTH)
-                .functionName(scope.getStackName() + "-PhoneOrderWait")
                 .description("Wait for Chime Phone Number to finish provisioning")
-                .timeout(Duration.minutes(10))
+                .timeout(Duration.minutes(15))
+                .memorySize(128)
                 .initialPolicy(List.of(PolicyStatement.Builder.create().actions(List.of("chime:GetPhoneNumberOrder")).resources(List.of("*")).build()))
                 .code(Code.fromInline(
                         """
@@ -69,7 +69,7 @@ public class ChimeWaitForNumber extends Function {
                // Response structure required by CloudFormation
                const response = {
                    Status: "SUCCESS",
-                   PhysicalResourceId: context.logStreamName,
+                   PhysicalResourceId: "waiting",
                    StackId: event.StackId,
                    RequestId: event.RequestId,
                    LogicalResourceId: event.LogicalResourceId,
@@ -144,10 +144,10 @@ public class ChimeWaitForNumber extends Function {
            }
            
            async function checkStatus(event) {
-                             let orderSuccessful = false;
-                           let orderAttempts = 0;
+              let orderSuccessful = false;
+              let orderAttempts = 0;
               let orderResults = '';
-              while (orderAttempts < 28) {
+              while (orderAttempts < 59) {
                 orderResults = await checkPhoneNumber(
                   event.ResourceProperties.OrderId
                 );

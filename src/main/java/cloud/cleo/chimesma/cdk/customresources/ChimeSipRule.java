@@ -35,7 +35,7 @@ public abstract class ChimeSipRule extends AwsCustomResource {
      */
     private static final String SR_ID = "SipRule.SipRuleId";
 
-    protected ChimeSipRule(Stack scope, String triggerValue, List<ChimeSipMediaApp> smas, SipRuleTriggerType type) {
+    protected ChimeSipRule(Stack scope, String triggerValue, List<ChimeSipMediaApp> smas, SipRuleTriggerType type, String name) {
         super(scope, ID + ID_COUNTER.incrementAndGet(), AwsCustomResourceProps.builder()
                 .resourceType("Custom::SipRule")
                 .installLatestAwsSdk(Boolean.FALSE)
@@ -45,7 +45,21 @@ public abstract class ChimeSipRule extends AwsCustomResource {
                         .action("CreateSipRuleCommand")
                         .physicalResourceId(PhysicalResourceId.fromResponse(SR_ID))
                         // SIP Rules are not region specific, so we need a unique name across all stacks, hence static counter
-                        .parameters(Map.of("Name", scope.getStackName() + "-" + ID_COUNTER.get(),
+                        .parameters(Map.of(
+                                "Name", name,
+                                "TriggerType", type.toString(),
+                                "TriggerValue",triggerValue,
+                                "Disabled", false,
+                                "TargetApplications", smas.stream().map(new TAMapper()).toList()
+                        ))
+                        .build())
+                .onUpdate(AwsSdkCall.builder()
+                        .service("@aws-sdk/client-chime-sdk-voice")
+                        .action("UpdateSipRuleCommand")
+                        .physicalResourceId(PhysicalResourceId.fromResponse(SR_ID))
+                        .parameters(Map.of(
+                                "SipRuleId", new PhysicalResourceIdReference(),
+                                "Name", name,
                                 "TriggerType", type.toString(),
                                 "TriggerValue",triggerValue,
                                 "Disabled", false,
@@ -74,6 +88,11 @@ public abstract class ChimeSipRule extends AwsCustomResource {
     public static class TAMapper implements Function<ChimeSipMediaApp,TargetApplication> {
         private final AtomicInteger counter = new AtomicInteger(0);
         
+        /**
+         *
+         * @param sma
+         * @return
+         */
         @Override
         public TargetApplication apply(ChimeSipMediaApp sma) {
             return  new TargetApplication(sma.getSMAId(), counter.incrementAndGet(), sma.getRegion());

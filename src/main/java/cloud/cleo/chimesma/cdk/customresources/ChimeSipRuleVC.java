@@ -15,8 +15,8 @@ import software.amazon.awscdk.Stack;
 public class ChimeSipRuleVC extends ChimeSipRule {
 
 
-    public ChimeSipRuleVC(Stack scope, ChimeVoiceConnector vc, List<ChimeSipMediaApp> smas) {
-        super(scope,vc.getOutboundName(), smas, SipRuleTriggerType.RequestUriHostname);
+    public ChimeSipRuleVC(Stack scope, ChimeVoiceConnector vc, List<ChimeSipMediaApp> smas, String name) {
+        super(scope,vc.getOutboundName(), smas, SipRuleTriggerType.RequestUriHostname, name);
     }
 
 }

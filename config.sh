@@ -1,7 +1,7 @@
 # Common stuff between deploy and destroy scripts
 
 # Stack name
-STACK_NAME=chime-voice-cdk-provision
+STACK_NAME=chime-cdk-provision
 
 
 # Regions we will deploy to (the only supported US regions for Chime PSTN SDK)

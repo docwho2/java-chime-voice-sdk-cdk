@@ -19,7 +19,7 @@ fi
 
 # Exit immediately if a command exits with a non-zero status.
 set -e
-cdk destroy -c accountId=${ACCOUNT_ID} --all --force
+cdk destroy -c accountId=${ACCOUNT_ID} -c stackName=${STACK_NAME} --all --force
 
 set +e
 

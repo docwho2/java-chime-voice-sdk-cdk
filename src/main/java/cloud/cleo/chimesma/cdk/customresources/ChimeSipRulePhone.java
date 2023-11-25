@@ -16,8 +16,8 @@ public class ChimeSipRulePhone extends ChimeSipRule {
 
  
 
-    public ChimeSipRulePhone(Stack scope, String  phoneE164, List<ChimeSipMediaApp> smas) {
-        super(scope,phoneE164, smas, SipRuleTriggerType.ToPhoneNumber);
+    public ChimeSipRulePhone(Stack scope, String  phoneE164, List<ChimeSipMediaApp> smas, String name) {
+        super(scope,phoneE164, smas, SipRuleTriggerType.ToPhoneNumber, name);
     }
 
 }

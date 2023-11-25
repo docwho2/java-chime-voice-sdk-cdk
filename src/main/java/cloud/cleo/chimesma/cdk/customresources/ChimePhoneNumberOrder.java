@@ -14,12 +14,12 @@ import software.amazon.awscdk.customresources.AwsCustomResourcePolicy;
 import software.amazon.awscdk.customresources.AwsCustomResourceProps;
 import software.amazon.awscdk.customresources.AwsSdkCall;
 import software.amazon.awscdk.customresources.PhysicalResourceId;
+import software.amazon.awscdk.customresources.PhysicalResourceIdReference;
 import software.amazon.awscdk.customresources.SdkCallsPolicyOptions;
 import software.amazon.awscdk.services.logs.RetentionDays;
 
 /**
- * Order a phone number (that was obtained from a search)
- * and delete (release the phone number) when stack destroys
+ * Order a phone number (that was obtained from a search) and delete (release the phone number) when stack destroys
  *
  * @author sjensen
  */
@@ -29,8 +29,6 @@ public class ChimePhoneNumberOrder extends AwsCustomResource {
      * The Phone number element 0 from the array
      */
     private static final String ORDER_ID = "PhoneNumberOrder.PhoneNumberOrderId";
-    
-    private static final String PHONE_NUMBER = "PhoneNumberOrder.OrderedPhoneNumbers.0.E164PhoneNumber"; 
 
     public ChimePhoneNumberOrder(Stack scope, String phoneE164) {
         super(scope, "E164Order", AwsCustomResourceProps.builder()
@@ -41,14 +39,19 @@ public class ChimePhoneNumberOrder extends AwsCustomResource {
                         .service("@aws-sdk/client-chime-sdk-voice")
                         .action("CreatePhoneNumberOrderCommand")
                         .physicalResourceId(PhysicalResourceId.fromResponse(ORDER_ID))
-                        .parameters( new CreatePhoneNumberOrderRequest(List.of(phoneE164),"CDK Phone Number"))
+                        .parameters(new CreatePhoneNumberOrderRequest(List.of(phoneE164), "CDK Phone Number"))
                         .build())
-                 .onDelete(AwsSdkCall.builder()
+                .onUpdate(AwsSdkCall.builder()
+                        .service("@aws-sdk/client-chime-sdk-voice")
+                        .action("GetPhoneNumberOrderCommand")
+                        .physicalResourceId(PhysicalResourceId.fromResponse(ORDER_ID))
+                        .parameters(Map.of("PhoneNumberOrderId", new PhysicalResourceIdReference()))
+                        .build())
+                .onDelete(AwsSdkCall.builder()
                         .service("@aws-sdk/client-chime-sdk-voice")
                         .action("DeletePhoneNumberCommand")
-                        .parameters(Map.of("PhoneNumberId",phoneE164))
+                        .parameters(Map.of("PhoneNumberId", phoneE164))
                         .build())
-                
                 .logRetention(RetentionDays.ONE_MONTH)
                 .build());
 
@@ -62,27 +65,19 @@ public class ChimePhoneNumberOrder extends AwsCustomResource {
     public String getOrderId() {
         return getResponseField(ORDER_ID);
     }
-    
-    /**
-     * The Ordered phone Number so we can chain with the resource which would be SIP Rule
-     * @return 
-     */
-    public String getOrderedPhoneNumber() {
-        return getResponseField(PHONE_NUMBER);
-    }
-    
+
     @AllArgsConstructor
     private static class CreatePhoneNumberOrderRequest {
-        
+
         @JsonProperty(value = "ProductType")
         final String productType = "SipMediaApplicationDialIn";
-        
+
         @JsonProperty(value = "E164PhoneNumbers")
         List<String> phoneNumbers;
-        
+
         @JsonProperty(value = "Name")
         String name;
-        
+
     }
 
 }

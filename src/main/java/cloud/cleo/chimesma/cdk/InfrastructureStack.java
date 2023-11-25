@@ -59,13 +59,13 @@ public class InfrastructureStack extends Stack {
 
 
         String vc_arn = "PSTN";
-        if  ( hasEnv(VOICE_CONNECTOR,PBX_HOSTNAME,TWILIO_ACCOUNT_SID) ) {
+        if  ( hasEnv(VOICE_CONNECTOR,VOICE_CONNECTOR_ALLOW_IP,PBX_HOSTNAME,TWILIO_ACCOUNT_SID) ) {
             
             // Voice Connector
             vc = new ChimeVoiceConnector(this);
 
             // SIP rule that associates the SMA with the Voice Connector
-            new ChimeSipRuleVC(this, vc, List.of(sma));
+            new ChimeSipRuleVC(this, vc, List.of(sma), getStackName() + "-" + getRegion() );
 
             new StringParameter(this, "VC_HOSTNAME_PARAM", StringParameterProps.builder()
                     .parameterName("/" + getStackName() + "/VC_HOSTNAME")
@@ -78,7 +78,7 @@ public class InfrastructureStack extends Stack {
                     .value(vc.getOutboundName())
                     .build());
             
-            // throw out a SIP URL so you can call it with your favor SIP App (after adding IP to VC manually)
+            // throw out a SIP URL 
             new CfnOutput(this, "SIPUri", CfnOutputProps.builder()
                     .description("SIP Uri to call into the Session Media App")
                     .value("sip:+17035550122@" + vc.getOutboundName())
