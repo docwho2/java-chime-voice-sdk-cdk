@@ -24,7 +24,7 @@ jobs:
         environment: [ frankfurt, frankfurt-pbx , frankfurt-twilio, london, london-pbx, london-twilio ]
     runs-on: ubuntu-latest
     environment: ${{ matrix.environment }}
-    concurrency: ${{ (startsWith(matrix.environment,'london') && 'london') || 'frankfurt' }}
+    # concurrency: ${{ (startsWith(matrix.environment,'london') && 'london') || 'frankfurt' }}
 
     steps:
     - name:  Checkout Code
