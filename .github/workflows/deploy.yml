@@ -26,6 +26,10 @@ jobs:
     environment: ${{ matrix.environment }}
     # concurrency: ${{ (startsWith(matrix.environment,'london') && 'london') || 'frankfurt' }}
 
+    env:
+      TWILIO_AUTH_TOKEN: ${{ secrets.TWILIO_AUTH_TOKEN }}
+      TWILIO_ACCOUNT_SID: ${{ secrets.TWILIO_ACCOUNT_SID }}
+      
     steps:
     - name:  Checkout Code
       uses: actions/checkout@v4
@@ -74,11 +78,11 @@ jobs:
         PBX_HOSTNAME: ${{ vars.PBX_HOSTNAME }}
     
     - name: Deploy Twilio CDK Stack
-      if: ${{ secrets.TWILIO_AUTH_TOKEN }}
+      if: ${{ env.TWILIO_ACCOUNT_SID && env.TWILIO_AUTH_TOKEN }}
       run: cdk deploy -c accountId=${AWS_ACCOUNT_ID} -c stackName=${{ vars.STACK_NAME }}  -c regionEast=${{ vars.REGION }}  --require-approval=never --ci=true twilio
       env:
         # SIP PBX like Asterisk with public static IP, this will configure VC to allow calls from this and send calls to it (use IP, not a hostname actually)
         PBX_HOSTNAME: ${{ vars.PBX_HOSTNAME }}
         # Twilio Create SIP trunk pointing to Voice Connector
-        TWILIO_ACCOUNT_SID: ${{ secrets.TWILIO_ACCOUNT_SID }}
-        TWILIO_AUTH_TOKEN: ${{ secrets.TWILIO_AUTH_TOKEN }}
+        TWILIO_ACCOUNT_SID: ${TWILIO_ACCOUNT_SID}
+        TWILIO_AUTH_TOKEN: ${TWILIO_AUTH_TOKEN}
