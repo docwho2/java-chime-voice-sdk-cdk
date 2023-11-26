@@ -20,7 +20,8 @@ jobs:
   deploy:
     strategy:
       matrix:
-        environment: [ frankfurt, frankfurt-pbx , london, london-pbx ]
+        # deploy various scenarios to test no VC, with VC (pbx), and WC with Twilio
+        environment: [ frankfurt, frankfurt-pbx , frankfurt-twilio, london, london-pbx, london-twilio ]
     runs-on: ubuntu-latest
     environment: ${{ matrix.environment }}
     concurrency: ${{ (startsWith(matrix.environment,'london') && 'london') || 'frankfurt' }}
@@ -56,18 +57,20 @@ jobs:
     - name: Ensure CDK is bootstraped and up to date
       run: cdk bootstrap --ci=true -c accountId=${AWS_ACCOUNT_ID} aws://${AWS_ACCOUNT_ID}/${{ vars.REGION }}
     
-    - name: Destroy Stack if it exists for Frankfurt region only
+    - name: Destroy Stack if it exists for Frankfurt region
       if: startsWith(matrix.environment,'frankfurt')
+      # For Frankfurt we test full tear down of staack and deploy, London we test already deployed stack
       run: cdk destroy -c accountId=${AWS_ACCOUNT_ID} -c stackName=${{ vars.STACK_NAME }}  -c regionEast=${{ vars.REGION }}  --force --ci=true east
     
     - name: Sleeping for 10 seconds if Frankfurt
       if: startsWith(matrix.environment,'frankfurt')
       run: sleep 10
     
-    - name: Add PBX_HOSTNAME to Environment if var is set
-      if: ${{ vars.PBX_HOSTNAME }}
-      run: echo "PBX_HOSTNAME=${{ vars.PBX_HOSTNAME }}" >> $GITHUB_ENV 
-    
     - name: Deploy CDK Stack
       run: cdk deploy -c accountId=${AWS_ACCOUNT_ID} -c stackName=${{ vars.STACK_NAME }}  -c regionEast=${{ vars.REGION }}  --require-approval=never --ci=true east
-
+      env:
+        # SIP PBX like Asterisk with public static IP, this will configure VC to allow calls from this and send calls to it (use IP, not a hostname actually)
+        PBX_HOSTNAME: ${{ vars.PBX_HOSTNAME }}
+        # Twilio Create SIP trunk pointing to Voice Connector
+        TWILIO_ACCOUNT_SID: ${{ secrets.TWILIO_ACCOUNT_SID }}
+        TWILIO_AUTH_TOKEN: ${{ secrets.TWILIO_AUTH_TOKEN }}
