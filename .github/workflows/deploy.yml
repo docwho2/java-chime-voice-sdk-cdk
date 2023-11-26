@@ -85,5 +85,5 @@ jobs:
         # SIP PBX like Asterisk with public static IP, this will configure VC to allow calls from this and send calls to it (use IP, not a hostname actually)
         PBX_HOSTNAME: ${{ vars.PBX_HOSTNAME }}
         # Twilio Create SIP trunk pointing to Voice Connector
-        TWILIO_ACCOUNT_SID: ${TWILIO_ACCOUNT_SID}
-        TWILIO_AUTH_TOKEN: ${TWILIO_AUTH_TOKEN}
+        TWILIO_ACCOUNT_SID: ${{ env.TWILIO_ACCOUNT_SID }}
+        TWILIO_AUTH_TOKEN: ${{ env.TWILIO_AUTH_TOKEN }}
