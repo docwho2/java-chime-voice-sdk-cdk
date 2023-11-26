@@ -21,14 +21,18 @@ public class TwilioStack extends Stack {
         super(parent, id, props);
 
         // Create the Trunk and give it's name this stack name
-        final var sipTrunk = new TwilioSipTrunk(this,getStackName());
+        final var sipTrunk = new TwilioSipTrunk(this, getStackName());
 
         // Set the Orig entries to the VC's
-        new TwilioOriginationUrl(this, sipTrunk.getTwilioSid(), vc1);
-        new TwilioOriginationUrl(this, sipTrunk.getTwilioSid(), vc2);
-        
+        if (vc1 != null) {
+            new TwilioOriginationUrl(this, sipTrunk.getTwilioSid(), vc1);
+        }
+        if (vc2 != null) {
+            new TwilioOriginationUrl(this, sipTrunk.getTwilioSid(), vc2);
+        }
+
         // Associate Phone NUmber to Trunk if SID provided
-        if ( InfrastructureApp.hasEnv(InfrastructureApp.ENV_VARS.TWILIO_PHONE_NUMBER_SID) ) {
+        if (InfrastructureApp.hasEnv(InfrastructureApp.ENV_VARS.TWILIO_PHONE_NUMBER_SID)) {
             new TwilioTrunkPhoneNumber(this, sipTrunk.getTwilioSid(), InfrastructureApp.getEnv(InfrastructureApp.ENV_VARS.TWILIO_PHONE_NUMBER_SID));
         }
     }

@@ -70,6 +70,7 @@ public final class InfrastructureApp extends App {
         String stackName = getParamOrDefault(app, "stackName", "chime-sdk-cdk-provision");
         String regionEast = getParamOrDefault(app, "regionEast", "us-east-1");
         String regionWest = getParamOrDefault(app, "regionWest", "us-west-2");
+        String twilioEastOnly = getParamOrDefault(app, "twilioEastOnly", "false");
 
         
         final var east = new InfrastructureStack(app, "east", StackProps.builder()
@@ -85,12 +86,15 @@ public final class InfrastructureApp extends App {
                 .build());
 
         if (hasTwilio()) {
+            final var vcEast = east.getVoiceConnector();
+            final var vcWest = twilioEastOnly.equalsIgnoreCase("true") ? null : west.getVoiceConnector();
+            
             new TwilioStack(app, "twilio", StackProps.builder()
                     .description("Provision Twilio Sip Trunk")
                     .stackName(stackName + "-twilio")
                     .env(makeStackEnv(accountId, regionEast))
                     .crossRegionReferences(Boolean.TRUE)
-                    .build(), east.getVoiceConnector(), west.getVoiceConnector());
+                    .build(), vcEast, vcWest);
         }
 
         // Provision Chime Phone Number if area code provided
