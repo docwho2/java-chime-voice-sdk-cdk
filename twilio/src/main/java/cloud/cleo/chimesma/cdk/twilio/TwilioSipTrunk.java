@@ -1,75 +1,55 @@
 package cloud.cleo.chimesma.cdk.twilio;
 
-import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.CloudFormationCustomResourceEvent;
-import com.twilio.Twilio;
-
 import com.twilio.rest.trunking.v1.Trunk;
-import java.util.UUID;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import software.amazon.lambda.powertools.cloudformation.AbstractCustomResourceHandler;
-import software.amazon.lambda.powertools.cloudformation.Response;
+import java.util.Objects;
 
 /**
  *
  * @author sjensen
  */
-public class TwilioSipTrunk extends AbstractCustomResourceHandler {
+public class TwilioSipTrunk extends TwilioBase {
 
-    // Initialize the Log4j logger.
-    static final Logger log = LogManager.getLogger(TwilioSipTrunk.class);
+    private final static String TRUNK_NAME = "name";
+    
+    @Override
+    protected String createEvent(CloudFormationCustomResourceEvent cfcre) {
 
-    static {
-        Twilio.init(System.getenv("TWILIO_ACCOUNT_SID"), System.getenv("TWILIO_AUTH_TOKEN"));
+        final var name = cfcre.getResourceProperties().get(TRUNK_NAME).toString();
+        final var trunk = Trunk.creator()
+                .setFriendlyName(name)
+                .create();
+
+        return trunk.getSid();
     }
 
-
     @Override
-    protected Response create(CloudFormationCustomResourceEvent cfcre, Context cntxt) {
-        log.debug("Received CREATE Event from Cloudformation", cfcre);
+    protected String updateEvent(CloudFormationCustomResourceEvent cfcre) {
+        final var sid = cfcre.getPhysicalResourceId();
+        final var name_old = cfcre.getOldResourceProperties().get(TRUNK_NAME).toString();
+        final var name_curr = cfcre.getResourceProperties().get(TRUNK_NAME).toString();
 
-        var sid = UUID.randomUUID().toString();
-        try {
-            
-            final var trunk = Trunk.creator()
-                    .setFriendlyName("Chime VoiceConnector")
-                    .create();
-
-            sid = trunk.getSid();
-            log.debug("SIP Trunk created with SID " + sid);
-
-        } catch (Exception e) {
-            log.error("Create Error", e);
-            return Response.failed(sid);
+        if (Objects.equals(name_curr, name_old)) {
+            log.info("Trunk Name has not changed, not performing API Call");
+        } else {
+            log.info("Trunk Name has changed, performing API Call to update name");
+            Trunk.updater(sid)
+                    .setFriendlyName(name_curr)
+                    .update();
         }
-        return Response.success(sid);
+        return sid;
     }
 
     @Override
-    protected Response update(CloudFormationCustomResourceEvent cfcre, Context cntxt) {
-        log.debug("Received UPDATE Event from Cloudformation", cfcre);
-        return Response.success(cfcre.getPhysicalResourceId());
-    }
-
-    @Override
-    protected Response delete(CloudFormationCustomResourceEvent cfcre, Context cntxt) {
-        log.debug("Received DELETE Event from Cloudformation", cfcre);
+    protected String deleteEvent(CloudFormationCustomResourceEvent cfcre) {
 
         final var sid = cfcre.getPhysicalResourceId();
-        log.debug("Deleting SID " + sid);
-        try {
-            if (!Trunk.deleter(sid).delete()) {
-                throw new RuntimeException("Could Not Delete SIP Trunk");
-            }
-            log.debug("SIP Trunk deleted with SID " + sid);
 
-        } catch (Exception e) {
-            log.error("Delete Error", e);
-            return Response.failed(sid);
+        if (!Trunk.deleter(sid).delete()) {
+            throw new RuntimeException("Could Not Delete SIP Trunk");
         }
 
-        return Response.success(sid);
+        return sid;
     }
 
 }

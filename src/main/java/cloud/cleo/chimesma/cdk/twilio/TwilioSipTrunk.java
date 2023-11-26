@@ -4,36 +4,22 @@
  */
 package cloud.cleo.chimesma.cdk.twilio;
 
-import software.amazon.awscdk.CustomResource;
-import software.amazon.awscdk.CustomResourceProps;
+import java.util.Map;
 import software.amazon.awscdk.Stack;
 
 /**
- * Twilio SIP Trunk Function that will provision
+ * Twilio SIP Trunk Function that will provision.
  *
  * @author sjensen
  */
 public class TwilioSipTrunk extends TwilioBase {
 
-    final CustomResource cr;
 
     /**
      * @param scope
+     * @param name Friendly Name of the SIP Trunk in Twilio
      */
-    public TwilioSipTrunk(Stack scope) {
-        super(scope, TwilioSipTrunk.class);
-
-        // Add associated Custom Resource linked to this Lambda
-        cr = new CustomResource(this, "SipTrunkResource", CustomResourceProps.builder()
-                .resourceType("Custom::" + TwilioSipTrunk.class.getSimpleName())
-                .serviceToken(getFunctionArn())
-                .build());
-
+    public TwilioSipTrunk(Stack scope, String name) {
+        super(scope, TwilioSipTrunk.class,Map.of("name",name));
     }
-
-    @Override
-    public String getSid() {
-        return cr.getRef();
-    }
-
 }

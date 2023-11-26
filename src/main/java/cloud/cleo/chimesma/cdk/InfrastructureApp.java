@@ -15,32 +15,47 @@ public final class InfrastructureApp extends App {
      */
     public enum ENV_VARS {
         /**
-         * If set in the environment, setup Origination to point to Voice Connector and allow from termination as well
+         * If set in the environment, setup Origination to point to Voice Connector and allow from termination as well.
+         * This should be set to IP Address even though it says host name.
          */
         PBX_HOSTNAME,
+        
         /**
          * Provision a phone number in this area code (make sure you use an area code that has numbers in pool)
+         * Any phone number created in the stack will be deleted when the stack tears down like other resources.
+         * When the stacks provision, the created phone number will be an output value of the stack.
          */
         CHIME_AREA_CODE,
+        
         /**
-         * Existing Phone number in Chime Voice. This will trigger pointing a SIP rule at this number for the SMA's
+         * Existing Phone number in Chime Voice. This will trigger pointing a SIP rule at this number for the SMA's.
+         * Use this when you create the Number manually and don't want it destroyed with the stack.
          */
         CHIME_PHONE_NUMBER,
+        
         /**
-         * Provision a Voice Connector so SIP calls can be made in and out. Implied if PBX_HOSTNAME set.
+         * Provision a Voice Connector so SIP calls can be made in and out. 
+         * Implied if PBX_HOSTNAME/VOICE_CONNECTOR_ALLOW_IP set.
          */
         VOICE_CONNECTOR,
+        
         /**
-         * Single IP address to allow to call the Voice Connector (Cannot be private range or will fail).  Also implies VC will be created
+         * Single IP address to allow to call the Voice Connector (Cannot be private IP or will fail).
+         * Also implies Voice Connector will be created.
          */
         VOICE_CONNECTOR_ALLOW_IP,
         
         /**
-         * Twilio Keys, provisions Twilio SIP Trunk if both present
+         * Twilio Keys, provisions Twilio SIP Trunk if both present and wires everything up to the Voice Connector.
          */
         TWILIO_ACCOUNT_SID,
         TWILIO_AUTH_TOKEN,
-        // Existing Phone number to point to Trunk
+        
+        /**
+         * Similar to CHIME_PHONE_NUMBER, but in Twilio, if you have a phone number and you want to associate it to the created
+         * trunk, then provide the SID for the phone number.  Like in Chime, when the stack is destroyed it will just
+         * leave the phone number unassociated when the stack is destroyed.
+         */
         TWILIO_PHONE_NUMBER_SID
     }
 

@@ -22,6 +22,8 @@ import software.amazon.awscdk.services.s3.assets.AssetOptions;
 import static cloud.cleo.chimesma.cdk.InfrastructureApp.ENV_VARS.*;
 import cloud.cleo.chimesma.cdk.InfrastructureApp;
 import java.util.concurrent.atomic.AtomicInteger;
+import software.amazon.awscdk.CustomResource;
+import software.amazon.awscdk.CustomResourceProps;
 
 /**
  * Base class for all Twilio Custom Resource Lambda's
@@ -33,14 +35,16 @@ public abstract class TwilioBase extends Function {
     private static final AtomicInteger ID_COUNTER = new AtomicInteger(0);
     private static final BundlingOptions builderOptions;
 
+    private final CustomResource cr;
+
     static {
-        List<String> functionOnePackagingInstructions = Arrays.asList(
+        List<String> packagingInstructions = Arrays.asList(
                 "/bin/sh",
                 "-c",
                 "mvn --quiet clean install && cp /asset-input/target/twilio.jar /asset-output/");
 
         builderOptions = BundlingOptions.builder()
-                .command(functionOnePackagingInstructions)
+                .command(packagingInstructions)
                 .image(JAVA_17.getBundlingImage())
                 .user("root")
                 .outputType(BundlingOutput.ARCHIVED)
@@ -48,11 +52,14 @@ public abstract class TwilioBase extends Function {
 
     }
 
+    
     /**
      * @param scope
+     * @param c Class of child inheriting from this
+     * @param props Properties for Custom Resource
      */
-    protected TwilioBase(Stack scope, Class c) {
-        super(scope, c.getSimpleName() + ID_COUNTER.incrementAndGet(), FunctionProps.builder()
+    protected TwilioBase(Stack scope, Class c, Map<String,? extends Object> props) {
+        super(scope, c.getSimpleName() + "LAM" + ID_COUNTER.incrementAndGet(), FunctionProps.builder()
                 .handler(c.getName())
                 .runtime(JAVA_17)
                 .description(c.getSimpleName() + " Provisioning Lambda")
@@ -67,13 +74,30 @@ public abstract class TwilioBase extends Function {
                         TWILIO_AUTH_TOKEN.toString(), InfrastructureApp.getEnv(TWILIO_AUTH_TOKEN)))
                 .build());
 
+        // Add associated Custom Resource linked to this Lambda
+        cr = new CustomResource(this, c.getSimpleName() + "CR" + ID_COUNTER.get(), CustomResourceProps.builder()
+                .resourceType("Custom::" + c.getSimpleName())
+                .properties(props)
+                .serviceToken(getFunctionArn())
+                .build());
+
     }
 
-    protected static Code getCode() {
+    /**
+     * Build code from the Twilio Sub-Directory
+     * @return 
+     */
+    private static Code getCode() {
         return Code.fromAsset("./twilio", AssetOptions.builder()
                 .bundling(builderOptions).build());
     }
-    
-    public abstract String getSid();
+
+    /**
+     * Will be the Twilio SID of resource created, which is the Physical ID being set by the Lambda's
+     * @return 
+     */
+    public final String getTwilioSid() {
+        return cr.getRef();
+    }
 
 }

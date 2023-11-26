@@ -3,15 +3,15 @@
 
 ## Summary
 
-This project deploys a simple [SIP Media Application](https://docs.aws.amazon.com/chime-sdk/latest/ag/use-sip-apps.html) with [AWS CDK](https://aws.amazon.com/cdk/) as a maven Java Project.
+This project deploys a simple [SIP Media Application](https://docs.aws.amazon.com/chime-sdk/latest/ag/use-sip-apps.html) with [AWS CDK](https://aws.amazon.com/cdk/) as a maven Java Project.  It can also Create [Twilio](https://www.twilio.com/en-us) SIP trunks and wire everything up to Chime Voice Connectors.
 
 The goal of the project is to develop Custom CDK components in Java that use AWS API's to provision Chime SDK resources to multiple regions in parallel along with GitHub actions to both validate template creation as well as deploy.
 
 For a full working example of using this project, check out [Amazon Chime SMA ChatGPT IVR for Square Retail](https://github.com/docwho2/java-squareup-chatgpt-ivr).
 - This CDK project deploys all Chime Voice and Twilio components
-- SAM is then used to deploy SMA application to multiple regions
+- SAM is then used to deploy SMA applications to multiple regions
 - Check out the [Work Flow](https://github.com/docwho2/java-squareup-chatgpt-ivr/blob/main/.github/workflows/deploy.yml)
-- To include in your project bring it in as a submodule (like above project)
+- To include in your project, bring it in as a submodule (like above project)
     - git submodule add https://github.com/docwho2/java-chime-voice-sdk-cdk.git ChimeCDKProvsion
         - replace ChimeCDKProvsion with whatever you want the sub directory in your project if you don't like above
         - You will then be locked into the version at the time you add
@@ -26,7 +26,7 @@ For a full working example of using this project, check out [Amazon Chime SMA Ch
     - [SIP Rule](src/main/java/cloud/cleo/chimesma/cdk/customresources/ChimeSipRule.java)
 - Deploys simple [SMA handler](src/main/java/cloud/cleo/chimesma/cdk/resources/ChimeSMAFunction.java) that plays message and hangs up
 - Global Stacks (requires cross-region references which CDK handles automatically)
-    - Twilio
+    - [Twilio](https://www.twilio.com/)
         - Creates SIP Trunk in Twilio
         - Creates origination URL's to point to Chime Voice Connectors in both regions
         - Sets Chime Voice Connector Termination allowed hosts to Twilio IP singaling ranges
@@ -53,36 +53,47 @@ From (Infrastructure App)[src/main/java/cloud/cleo/chimesma/cdk/InfrastructureAp
      */
     public enum ENV_VARS {
         /**
-         * If set in the environment, setup Origination to point to in Voice Connector and allow from termination as well
+         * If set in the environment, setup Origination to point to Voice Connector and allow from termination as well.
+         * This should be set to IP Address even though it says host name.
          */
         PBX_HOSTNAME,
         
         /**
-         * Attempt to provision a phone number in this area code (US Only)
+         * Provision a phone number in this area code (make sure you use an area code that has numbers in pool)
+         * Any phone number created in the stack will be deleted when the stack tears down like other resources.
+         * When the stacks provision, the created phone number will be an output value of the stack.
          */
         CHIME_AREA_CODE,
         
         /**
-         * Existing Phone number in Chime Voice. This will trigger pointing a SIP rule at this number
+         * Existing Phone number in Chime Voice. This will trigger pointing a SIP rule at this number for the SMA's.
+         * Use this when you create the Number manually and don't want it destroyed with the stack.
          */
         CHIME_PHONE_NUMBER,
         
         /**
-         * Provision a Voice Connector so SIP calls can be made in and out. Implied if PBX_HOSTNAME set.
+         * Provision a Voice Connector so SIP calls can be made in and out. 
+         * Implied if PBX_HOSTNAME/VOICE_CONNECTOR_ALLOW_IP set.
          */
         VOICE_CONNECTOR,
         
         /**
-         * Single IP address to allow to call the Voice Connector (Cannot be private range or will fail)
+         * Single IP address to allow to call the Voice Connector (Cannot be private IP or will fail).
+         * Also implies Voice Connector will be created.
          */
         VOICE_CONNECTOR_ALLOW_IP,
         
         /**
-         * Twilio Keys, provisions SIP Trunk if both present, points to Chime VC's and allows Twilio IP's to the VC's
+         * Twilio Keys, provisions Twilio SIP Trunk if both present and wires everything up to the Voice Connector.
          */
         TWILIO_ACCOUNT_SID,
         TWILIO_AUTH_TOKEN,
-        // Existing Phone number to point to Trunk
+        
+        /**
+         * Similar to CHIME_PHONE_NUMBER, but in Twilio, if you have a phone number and you want to associate it to the created
+         * trunk, then provide the SID for the phone number.  Like in Chime, when the stack is destroyed it will just
+         * leave the phone number unassociated when the stack is destroyed.
+         */
         TWILIO_PHONE_NUMBER_SID
     }
 ```

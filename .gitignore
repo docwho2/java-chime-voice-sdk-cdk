@@ -6,6 +6,7 @@ target
 .settings
 .vscode
 *.iml
+nb-configuration.xml
 
 # CDK asset staging directory
 .cdk.staging

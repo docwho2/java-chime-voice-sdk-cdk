@@ -79,13 +79,16 @@ public class ChimeVoiceConnector extends AwsCustomResource {
 
         // Add Twilio
         if (hasEnv(PBX_HOSTNAME) || hasTwilio()) {
-            // Start with list of Twilio NA ranges for SIP Trunking
-            termAllow.add(AclCidr.ipv4("54.172.60.0/30"));
-            termAllow.add(AclCidr.ipv4("54.244.51.0/30"));
+            if (region.startsWith("us-")) {
+                // Start with list of Twilio NA ranges for SIP Trunking
+                termAllow.add(AclCidr.ipv4("54.172.60.0/30"));
+                termAllow.add(AclCidr.ipv4("54.244.51.0/30"));
+            }
 
-            // Europe, Ireland and Frankfurt
-            termAllow.add(AclCidr.ipv4("54.171.127.192/30"));
-            termAllow.add(AclCidr.ipv4("35.156.191.128/30"));
+            if (region.startsWith("eu-")) { // Europe, Ireland and Frankfurt
+                termAllow.add(AclCidr.ipv4("54.171.127.192/30"));
+                termAllow.add(AclCidr.ipv4("35.156.191.128/30"));
+            }
         }
 
         // Allow PBX to call in
