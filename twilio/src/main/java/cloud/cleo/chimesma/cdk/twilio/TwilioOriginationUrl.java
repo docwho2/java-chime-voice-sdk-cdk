@@ -63,11 +63,13 @@ public class TwilioOriginationUrl extends TwilioBase {
         log.debug("Deleting Orig URL SID " + sid);
 
         if (!OriginationUrl.deleter(trunkSid, sid).delete()) {
-            throw new RuntimeException("Could Not Delete Orig Url");
+            //throw new RuntimeException("Could Not Delete Orig Url");
+            // Ignore delete errors, in case was deleted outside stack
+            log.warn("Delete of Origination URL failed, might have been deleted outside stack");
+        } else {
+            log.debug("Origination URL deleted with SID " + sid);
         }
-
-        log.debug("Orig URL deleted with SID " + sid);
-
+        
         return sid;
     }
 

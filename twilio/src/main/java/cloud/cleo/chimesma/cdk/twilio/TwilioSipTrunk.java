@@ -11,7 +11,7 @@ import java.util.Objects;
 public class TwilioSipTrunk extends TwilioBase {
 
     private final static String TRUNK_NAME = "name";
-    
+
     @Override
     protected String createEvent(CloudFormationCustomResourceEvent cfcre) {
 
@@ -46,7 +46,10 @@ public class TwilioSipTrunk extends TwilioBase {
         final var sid = cfcre.getPhysicalResourceId();
 
         if (!Trunk.deleter(sid).delete()) {
-            throw new RuntimeException("Could Not Delete SIP Trunk");
+            //throw new RuntimeException("Could Not Delete SIP Trunk");
+            log.warn("Delete of SIP Trunk failed, might have been deleted outside stack");
+        } else {
+            log.debug("SIP Trunk deleted with SID " + sid);
         }
 
         return sid;
