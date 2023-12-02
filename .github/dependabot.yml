@@ -7,9 +7,13 @@ updates:
   - package-ecosystem: "github-actions"
     directory: "/" # Location of package manifests
     schedule:
-      interval: "weekly"
+      interval: "daily"
+      time: "03:30"
+      timezone: "America/Chicago"
   - package-ecosystem: "maven"
     directory: "/"
     open-pull-requests-limit: 10
     schedule:
       interval: "daily"
+      time: "03:30"
+      timezone: "America/Chicago"
