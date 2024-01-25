@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 import java.util.Map;
 import lombok.AllArgsConstructor;
+import software.amazon.awscdk.RemovalPolicy;
 import software.amazon.awscdk.Stack;
 import software.amazon.awscdk.customresources.AwsCustomResource;
 import software.amazon.awscdk.customresources.AwsCustomResourcePolicy;
@@ -18,6 +19,8 @@ import software.amazon.awscdk.customresources.PhysicalResourceIdReference;
 import software.amazon.awscdk.services.iam.PolicyStatement;
 import software.amazon.awscdk.services.lambda.CfnPermission;
 import software.amazon.awscdk.services.lambda.CfnPermissionProps;
+import software.amazon.awscdk.services.logs.LogGroup;
+import software.amazon.awscdk.services.logs.LogGroupProps;
 import software.amazon.awscdk.services.logs.RetentionDays;
 
 /**
@@ -27,6 +30,7 @@ import software.amazon.awscdk.services.logs.RetentionDays;
 public class ChimeSipMediaApp extends AwsCustomResource {
     
     private static final String ID = "SMA-CR";
+    private static final String ID_LOGS = ID + "-LOGS";
     private static final String ID_PERM = ID + "-PERM";
     
     /**
@@ -54,7 +58,9 @@ public class ChimeSipMediaApp extends AwsCustomResource {
                         .action("DeleteSipMediaApplicationCommand")
                         .parameters(Map.of("SipMediaApplicationId", new PhysicalResourceIdReference()))
                         .build())
-                .logRetention(RetentionDays.ONE_MONTH)
+                .logGroup(new LogGroup(scope, ID_LOGS, LogGroupProps.builder()
+                        .retention(RetentionDays.ONE_MONTH)
+                        .removalPolicy(RemovalPolicy.DESTROY).build()))
                 .build());
         
         // Add permission for Chime to Call the Lambda

@@ -9,26 +9,29 @@ import java.util.Map;
 import software.amazon.awscdk.CustomResource;
 import software.amazon.awscdk.CustomResourceProps;
 import software.amazon.awscdk.Duration;
+import software.amazon.awscdk.RemovalPolicy;
 import software.amazon.awscdk.Stack;
 import software.amazon.awscdk.services.iam.PolicyStatement;
 import software.amazon.awscdk.services.lambda.Code;
 import software.amazon.awscdk.services.lambda.Function;
 import software.amazon.awscdk.services.lambda.FunctionProps;
 import static software.amazon.awscdk.services.lambda.Runtime.*;
+import software.amazon.awscdk.services.logs.LogGroup;
+import software.amazon.awscdk.services.logs.LogGroupProps;
 import software.amazon.awscdk.services.logs.RetentionDays;
 
 /**
  * Given a phone OrderId wait on status to be Successful for up to 15 minutes which is mac lambda runtime
  *
- * 
- 
-}
+ *
+ *
+ * }
+ *
  * @author sjensen
  */
 public class ChimePhoneNumberSearch extends Function {
 
 // Input will look like this 
-    
 //     {
 //    "RequestType": "Create",
 //    "ServiceToken": "arn:aws:lambda:us-east-1:364253738352:function:chime-sdk-cdk-provision-phone-PhoneWait",
@@ -41,14 +44,15 @@ public class ChimePhoneNumberSearch extends Function {
 //        "ServiceToken": "arn:aws:lambda:us-east-1:364253738352:function:chime-sdk-cdk-provision-phone-PhoneWait",
 //        "OrderId": "06213c59-caf3-4d73-9c5c-4db2d9e89636"
 //    }
-      
     private final CustomResource cr;
-    
+
     public ChimePhoneNumberSearch(Stack scope, String areaCode) {
         super(scope, "PhoneSearch", FunctionProps.builder()
                 .handler("index.handler")
                 .runtime(NODEJS_LATEST)
-                .logRetention(RetentionDays.ONE_MONTH)
+                .logGroup(new LogGroup(scope, "PhoneSearchLogs", LogGroupProps.builder()
+                        .retention(RetentionDays.ONE_MONTH)
+                        .removalPolicy(RemovalPolicy.DESTROY).build()))
                 .description("Search For a Chime Phone Number")
                 .timeout(Duration.minutes(1))
                 .memorySize(128)
@@ -154,19 +158,19 @@ public class ChimePhoneNumberSearch extends Function {
                               """))
                 .build());
 
-        
         // Add associated Custom Resource linked to this Lambda
-     cr =  new CustomResource(this, "PhoneSearchCR", CustomResourceProps.builder()
+        cr = new CustomResource(this, "PhoneSearchCR", CustomResourceProps.builder()
                 .resourceType("Custom::PhoneSearch")
-                .properties(Map.of("areaCode",areaCode))
+                .properties(Map.of("areaCode", areaCode))
                 .serviceToken(getFunctionArn())
                 .build());
-        
+
     }
-    
+
     /**
      * Phone Number result from Search
-     * @return 
+     *
+     * @return
      */
     public String getPhoneNumber() {
         return cr.getAttString("phoneNumber");

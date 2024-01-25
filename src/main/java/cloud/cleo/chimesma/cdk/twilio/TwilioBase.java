@@ -24,6 +24,9 @@ import cloud.cleo.chimesma.cdk.InfrastructureApp;
 import java.util.concurrent.atomic.AtomicInteger;
 import software.amazon.awscdk.CustomResource;
 import software.amazon.awscdk.CustomResourceProps;
+import software.amazon.awscdk.RemovalPolicy;
+import software.amazon.awscdk.services.logs.LogGroup;
+import software.amazon.awscdk.services.logs.LogGroupProps;
 
 /**
  * Base class for all Twilio Custom Resource Lambda's
@@ -64,7 +67,9 @@ public abstract class TwilioBase extends Function {
                 .runtime(JAVA_17)
                 .description(c.getSimpleName() + " Provisioning Lambda")
                 .timeout(Duration.seconds(30))
-                .logRetention(RetentionDays.ONE_MONTH)
+                .logGroup(new LogGroup(scope, c.getSimpleName() + "LOG" + ID_COUNTER.get() , LogGroupProps.builder()
+                        .retention(RetentionDays.ONE_MONTH)
+                        .removalPolicy(RemovalPolicy.DESTROY).build()))
                 .maxEventAge(Duration.seconds(60))
                 .timeout(Duration.minutes(5))
                 .retryAttempts(0)

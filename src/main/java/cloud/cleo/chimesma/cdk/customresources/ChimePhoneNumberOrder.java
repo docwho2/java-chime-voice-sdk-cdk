@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 import java.util.Map;
 import lombok.AllArgsConstructor;
+import software.amazon.awscdk.RemovalPolicy;
 import software.amazon.awscdk.Stack;
 import software.amazon.awscdk.customresources.AwsCustomResource;
 import software.amazon.awscdk.customresources.AwsCustomResourcePolicy;
@@ -16,6 +17,8 @@ import software.amazon.awscdk.customresources.AwsSdkCall;
 import software.amazon.awscdk.customresources.PhysicalResourceId;
 import software.amazon.awscdk.customresources.PhysicalResourceIdReference;
 import software.amazon.awscdk.customresources.SdkCallsPolicyOptions;
+import software.amazon.awscdk.services.logs.LogGroup;
+import software.amazon.awscdk.services.logs.LogGroupProps;
 import software.amazon.awscdk.services.logs.RetentionDays;
 
 /**
@@ -52,7 +55,9 @@ public class ChimePhoneNumberOrder extends AwsCustomResource {
                         .action("DeletePhoneNumberCommand")
                         .parameters(Map.of("PhoneNumberId", phoneE164))
                         .build())
-                .logRetention(RetentionDays.ONE_MONTH)
+                .logGroup(new LogGroup(scope, "E164OrderLogs", LogGroupProps.builder()
+                        .retention(RetentionDays.ONE_MONTH)
+                        .removalPolicy(RemovalPolicy.DESTROY).build()))
                 .build());
 
     }

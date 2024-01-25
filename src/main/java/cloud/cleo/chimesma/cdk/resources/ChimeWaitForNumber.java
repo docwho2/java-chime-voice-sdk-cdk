@@ -9,12 +9,15 @@ import java.util.Map;
 import software.amazon.awscdk.CustomResource;
 import software.amazon.awscdk.CustomResourceProps;
 import software.amazon.awscdk.Duration;
+import software.amazon.awscdk.RemovalPolicy;
 import software.amazon.awscdk.Stack;
 import software.amazon.awscdk.services.iam.PolicyStatement;
 import software.amazon.awscdk.services.lambda.Code;
 import software.amazon.awscdk.services.lambda.Function;
 import software.amazon.awscdk.services.lambda.FunctionProps;
 import static software.amazon.awscdk.services.lambda.Runtime.*;
+import software.amazon.awscdk.services.logs.LogGroup;
+import software.amazon.awscdk.services.logs.LogGroupProps;
 import software.amazon.awscdk.services.logs.RetentionDays;
 
 /**
@@ -53,7 +56,9 @@ public class ChimeWaitForNumber extends Function {
         super(scope, "PhoneOrderWait", FunctionProps.builder()
                 .handler("index.handler")
                 .runtime(NODEJS_LATEST)
-                .logRetention(RetentionDays.ONE_MONTH)
+                .logGroup(new LogGroup(scope, "PhoneOrderWaitLogs", LogGroupProps.builder()
+                        .retention(RetentionDays.ONE_MONTH)
+                        .removalPolicy(RemovalPolicy.DESTROY).build()))
                 .description("Wait for Chime Phone Number to finish provisioning")
                 .timeout(Duration.minutes(15))
                 .memorySize(128)

@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import lombok.AllArgsConstructor;
+import software.amazon.awscdk.RemovalPolicy;
 import software.amazon.awscdk.Stack;
 import software.amazon.awscdk.customresources.AwsCustomResource;
 import software.amazon.awscdk.customresources.AwsCustomResourcePolicy;
@@ -18,6 +19,8 @@ import software.amazon.awscdk.customresources.AwsSdkCall;
 import software.amazon.awscdk.customresources.PhysicalResourceId;
 import software.amazon.awscdk.customresources.PhysicalResourceIdReference;
 import software.amazon.awscdk.customresources.SdkCallsPolicyOptions;
+import software.amazon.awscdk.services.logs.LogGroup;
+import software.amazon.awscdk.services.logs.LogGroupProps;
 import software.amazon.awscdk.services.logs.RetentionDays;
 
 /**
@@ -28,6 +31,7 @@ import software.amazon.awscdk.services.logs.RetentionDays;
 public abstract class ChimeSipRule extends AwsCustomResource {
     private static final AtomicInteger ID_COUNTER = new AtomicInteger(0);
     private static final String ID = "SR-CR";
+    private static final String ID_LOGS = ID + "-LOGS";
 
     
     /**
@@ -71,7 +75,9 @@ public abstract class ChimeSipRule extends AwsCustomResource {
                         .action("DeleteSipRuleCommand")
                         .parameters(Map.of("SipRuleId", new PhysicalResourceIdReference()))
                         .build())
-                .logRetention(RetentionDays.ONE_MONTH)
+                .logGroup(new LogGroup(scope, ID_LOGS + ID_COUNTER.get(), LogGroupProps.builder()
+                        .retention(RetentionDays.ONE_MONTH)
+                        .removalPolicy(RemovalPolicy.DESTROY).build()))
                 .build());
         
 

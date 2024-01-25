@@ -24,6 +24,9 @@ import static cloud.cleo.chimesma.cdk.InfrastructureApp.getEnv;
 import static cloud.cleo.chimesma.cdk.InfrastructureApp.hasEnv;
 import static cloud.cleo.chimesma.cdk.InfrastructureApp.hasTwilio;
 import java.util.ArrayList;
+import software.amazon.awscdk.RemovalPolicy;
+import software.amazon.awscdk.services.logs.LogGroup;
+import software.amazon.awscdk.services.logs.LogGroupProps;
 
 /**
  *
@@ -32,6 +35,7 @@ import java.util.ArrayList;
 public class ChimeVoiceConnector extends AwsCustomResource {
 
     private final static String ID = "VC-CR";
+    private final static String ID_LOGS = ID + "-LOGS";
 
     private final String region;
 
@@ -57,7 +61,9 @@ public class ChimeVoiceConnector extends AwsCustomResource {
                         .action("DeleteVoiceConnectorCommand")
                         .parameters(Map.of("VoiceConnectorId", new PhysicalResourceIdReference()))
                         .build())
-                .logRetention(RetentionDays.ONE_MONTH)
+                .logGroup(new LogGroup(scope, ID_LOGS, LogGroupProps.builder()
+                        .retention(RetentionDays.ONE_MONTH)
+                        .removalPolicy(RemovalPolicy.DESTROY).build()))
                 .build());
 
         region = scope.getRegion();
@@ -122,7 +128,9 @@ public class ChimeVoiceConnector extends AwsCustomResource {
                             .parameters(Map.of("VoiceConnectorId", getId(),
                                     "Termination", Map.of("CallingRegions", List.of("US"), "CidrAllowedList", termAllow.stream().map(ta -> ta.toCidrConfig().getCidrBlock()).toList(), "Disabled", false)))
                             .build())
-                    .logRetention(RetentionDays.ONE_MONTH)
+                    .logGroup(new LogGroup(scope, ID_LOGS + "-TERM", LogGroupProps.builder()
+                            .retention(RetentionDays.ONE_MONTH)
+                            .removalPolicy(RemovalPolicy.DESTROY).build()))
                     .build());
         }
 
@@ -149,7 +157,9 @@ public class ChimeVoiceConnector extends AwsCustomResource {
                             .parameters(Map.of("VoiceConnectorId", getId(),
                                     "Origination", Map.of("Routes", routes)))
                             .build())
-                    .logRetention(RetentionDays.ONE_MONTH)
+                    .logGroup(new LogGroup(scope, ID_LOGS + "-ORIG", LogGroupProps.builder()
+                            .retention(RetentionDays.ONE_MONTH)
+                            .removalPolicy(RemovalPolicy.DESTROY).build()))
                     .build());
         }
 
