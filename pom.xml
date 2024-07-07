@@ -46,7 +46,7 @@
         <dependency>
             <groupId>software.amazon.awscdk</groupId>
             <artifactId>aws-cdk-lib</artifactId>
-            <version>2.147.2</version>
+            <version>2.147.3</version>
         </dependency>
 
         <!-- Respective AWS Construct Libraries -->
