@@ -25,6 +25,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import software.amazon.awscdk.CustomResource;
 import software.amazon.awscdk.CustomResourceProps;
 import software.amazon.awscdk.RemovalPolicy;
+import software.amazon.awscdk.services.lambda.Architecture;
 import software.amazon.awscdk.services.logs.LogGroup;
 import software.amazon.awscdk.services.logs.LogGroupProps;
 
@@ -48,7 +49,7 @@ public abstract class TwilioBase extends Function {
 
         builderOptions = BundlingOptions.builder()
                 .command(packagingInstructions)
-                .image(JAVA_17.getBundlingImage())
+                .image(JAVA_21.getBundlingImage())
                 .user("root")
                 .outputType(BundlingOutput.ARCHIVED)
                 .volumes(singletonList(DockerVolume.builder().hostPath(System.getProperty("user.home") + "/.m2/").containerPath("/root/.m2/").build())).build();
@@ -64,7 +65,8 @@ public abstract class TwilioBase extends Function {
     protected TwilioBase(Stack scope, Class c, Map<String,? extends Object> props) {
         super(scope, c.getSimpleName() + "LAM" + ID_COUNTER.incrementAndGet(), FunctionProps.builder()
                 .handler(c.getName())
-                .runtime(JAVA_17)
+                .runtime(JAVA_21)
+                .architecture(Architecture.ARM_64)
                 .description(c.getSimpleName() + " Provisioning Lambda")
                 .timeout(Duration.seconds(30))
                 .logGroup(new LogGroup(scope, c.getSimpleName() + "LOG" + ID_COUNTER.get() , LogGroupProps.builder()
