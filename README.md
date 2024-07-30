@@ -112,7 +112,7 @@ If you have [brew](https://brew.sh) installed (highly recommended) then:
 ```bash
 brew install awscli
 brew install aws-cdk
-brew install corretto21
+brew install corretto@21
 brew install maven
 
 ```

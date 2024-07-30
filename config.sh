@@ -18,7 +18,7 @@ declare -a regions=( us-east-1 us-west-2)
 # VOICE_CONNECTOR_ALLOW_IP=162.216.219.185
 
 # If you have an existing phone number in Chime (in unassigned state) create SIP rule pointing number to SMA
-# CHIME_PHONE_NUMBER
+# CHIME_PHONE_NUMBER=+18004445555
 
 # If you have an Asterisk for example, create VC, and allow termination and origination to this IP (Implies VOICE_CONNECTOR=true)
 # PBX_HOSTNAME=54.0.0.1

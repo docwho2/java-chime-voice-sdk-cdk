@@ -11,7 +11,7 @@ ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 if [ "$AWS_EXECUTION_ENV" = "CloudShell" ]; then
     echo "CloudShell Detected, installing Java and Maven dependency"
     # Install needed tools
-    sudo yum -y install java-17-amazon-corretto
+    sudo yum -y install java-21-amazon-corretto
     # Ensure we are on latest CDK
     sudo npm install -g aws-cdk
     # Install 3.9.5 Maven Version which we know works (yum package is too outdated)
