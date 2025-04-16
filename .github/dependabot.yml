@@ -17,3 +17,10 @@ updates:
       interval: "daily"
       time: "03:30"
       timezone: "America/Chicago"
+  - package-ecosystem: "maven"
+    directory: "/twilio/"
+    open-pull-requests-limit: 10
+    schedule:
+      interval: "daily"
+      time: "03:30"
+      timezone: "America/Chicago"
