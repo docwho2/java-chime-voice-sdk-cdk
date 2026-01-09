@@ -99,7 +99,7 @@ public final class InfrastructureApp extends App {
 
         // Provision Chime Phone Number if area code provided
         //
-        if (hasEnv(CHIME_AREA_CODE, CHIME_PHONE_NUMBER)) {
+        if (hasEnvVar(CHIME_AREA_CODE, CHIME_PHONE_NUMBER)) {
             new ChimePhoneNumberStack(app, "phone", StackProps.builder()
                     .description("Provision Chime Phone Number")
                     .stackName(stackName + "-phone")
@@ -113,7 +113,7 @@ public final class InfrastructureApp extends App {
     }
 
     public static boolean hasTwilio() {
-        return hasEnv(TWILIO_ACCOUNT_SID) && hasEnv(TWILIO_AUTH_TOKEN);
+        return hasEnvVar(TWILIO_ACCOUNT_SID) && hasEnvVar(TWILIO_AUTH_TOKEN);
     }
     
     /**
@@ -121,7 +121,7 @@ public final class InfrastructureApp extends App {
      * @param envVar
      * @return 
      */
-    public static String getEnv(ENV_VARS envVar) {
+    public static String getEnvVar(ENV_VARS envVar) {
         return System.getenv(envVar.name());
     }
 
@@ -131,9 +131,9 @@ public final class InfrastructureApp extends App {
      * @param envVars
      * @return
      */
-    public static boolean hasEnv(ENV_VARS... envVars) {
+    public static boolean hasEnvVar(ENV_VARS... envVars) {
         for (var envVar : envVars) {
-            final var env = getEnv(envVar);
+            final var env = getEnvVar(envVar);
             if (env != null && !env.isBlank()) {
                 return true;
             }

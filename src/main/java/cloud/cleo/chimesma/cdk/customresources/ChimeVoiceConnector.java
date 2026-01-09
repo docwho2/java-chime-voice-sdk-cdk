@@ -20,13 +20,13 @@ import software.amazon.awscdk.services.ec2.AclCidr;
 import software.amazon.awscdk.services.iam.PolicyStatement;
 import software.amazon.awscdk.services.logs.RetentionDays;
 import static cloud.cleo.chimesma.cdk.InfrastructureApp.ENV_VARS.*;
-import static cloud.cleo.chimesma.cdk.InfrastructureApp.getEnv;
-import static cloud.cleo.chimesma.cdk.InfrastructureApp.hasEnv;
 import static cloud.cleo.chimesma.cdk.InfrastructureApp.hasTwilio;
 import java.util.ArrayList;
 import software.amazon.awscdk.RemovalPolicy;
 import software.amazon.awscdk.services.logs.LogGroup;
 import software.amazon.awscdk.services.logs.LogGroupProps;
+import static cloud.cleo.chimesma.cdk.InfrastructureApp.getEnvVar;
+import static cloud.cleo.chimesma.cdk.InfrastructureApp.hasEnvVar;
 
 /**
  *
@@ -84,7 +84,7 @@ public class ChimeVoiceConnector extends AwsCustomResource {
         var termAllow = new ArrayList<AclCidr>();
 
         // Add Twilio
-        if (hasEnv(PBX_HOSTNAME) || hasTwilio()) {
+        if (hasEnvVar(PBX_HOSTNAME) || hasTwilio()) {
             if (region.startsWith("us-")) {
                 // Start with list of Twilio NA ranges for SIP Trunking
                 termAllow.add(AclCidr.ipv4("54.172.60.0/30"));
@@ -98,13 +98,13 @@ public class ChimeVoiceConnector extends AwsCustomResource {
         }
 
         // Allow PBX to call in
-        if (hasEnv(PBX_HOSTNAME)) {
-            termAllow.add(AclCidr.ipv4(getEnv(PBX_HOSTNAME) + "/32"));
+        if (hasEnvVar(PBX_HOSTNAME)) {
+            termAllow.add(AclCidr.ipv4(getEnvVar(PBX_HOSTNAME) + "/32"));
         }
 
         // Generally Used so a given client IP can call as well
-        if (hasEnv(VOICE_CONNECTOR_ALLOW_IP)) {
-            termAllow.add(AclCidr.ipv4(getEnv(VOICE_CONNECTOR_ALLOW_IP) + "/32"));
+        if (hasEnvVar(VOICE_CONNECTOR_ALLOW_IP)) {
+            termAllow.add(AclCidr.ipv4(getEnvVar(VOICE_CONNECTOR_ALLOW_IP) + "/32"));
         }
 
         // If nothing set, then we don't need termination
@@ -137,8 +137,8 @@ public class ChimeVoiceConnector extends AwsCustomResource {
         /**
          * Only need to configure origination if outbound calls are needed for SIP
          */
-        if (hasEnv(PBX_HOSTNAME)) {
-            final var routes = List.of(Map.of("Host", getEnv(PBX_HOSTNAME), "Port", 5060, "Protocol", "UDP", "Priority", 1, "Weight", 1));
+        if (hasEnvVar(PBX_HOSTNAME)) {
+            final var routes = List.of(Map.of("Host", getEnvVar(PBX_HOSTNAME), "Port", 5060, "Protocol", "UDP", "Priority", 1, "Weight", 1));
             new AwsCustomResource(scope, ID + "-ORIG", AwsCustomResourceProps.builder()
                     .resourceType("Custom::VoiceConnectorOrig")
                     .installLatestAwsSdk(Boolean.FALSE)

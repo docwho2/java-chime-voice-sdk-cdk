@@ -5,7 +5,6 @@ import cloud.cleo.chimesma.cdk.customresources.ChimeSipMediaApp;
 import cloud.cleo.chimesma.cdk.customresources.ChimeSipRuleVC;
 import cloud.cleo.chimesma.cdk.resources.ChimeSMAFunction;
 import static cloud.cleo.chimesma.cdk.InfrastructureApp.ENV_VARS.*;
-import static cloud.cleo.chimesma.cdk.InfrastructureApp.hasEnv;
 import java.util.List;
 import software.amazon.awscdk.App;
 import software.amazon.awscdk.CfnOutput;
@@ -15,6 +14,7 @@ import software.amazon.awscdk.StackProps;
 import software.amazon.awscdk.services.lambda.Function;
 import software.amazon.awscdk.services.ssm.StringParameter;
 import software.amazon.awscdk.services.ssm.StringParameterProps;
+import static cloud.cleo.chimesma.cdk.InfrastructureApp.hasEnvVar;
 
 /**
  * CDK Stack
@@ -59,7 +59,7 @@ public class InfrastructureStack extends Stack {
 
 
         String vc_arn = "PSTN";
-        if  ( hasEnv(VOICE_CONNECTOR,VOICE_CONNECTOR_ALLOW_IP,PBX_HOSTNAME,TWILIO_ACCOUNT_SID) ) {
+        if  ( hasEnvVar(VOICE_CONNECTOR,VOICE_CONNECTOR_ALLOW_IP,PBX_HOSTNAME,TWILIO_ACCOUNT_SID) ) {
             
             // Voice Connector
             vc = new ChimeVoiceConnector(this);

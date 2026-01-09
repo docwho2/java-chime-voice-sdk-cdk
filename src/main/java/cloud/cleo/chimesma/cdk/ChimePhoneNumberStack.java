@@ -14,9 +14,9 @@ import software.amazon.awscdk.StackProps;
 import software.amazon.awscdk.services.ssm.StringParameter;
 import software.amazon.awscdk.services.ssm.StringParameterProps;
 import static cloud.cleo.chimesma.cdk.InfrastructureApp.ENV_VARS.*;
-import static cloud.cleo.chimesma.cdk.InfrastructureApp.getEnv;
-import static cloud.cleo.chimesma.cdk.InfrastructureApp.hasEnv;
 import cloud.cleo.chimesma.cdk.resources.ChimePhoneNumberSearch;
+import static cloud.cleo.chimesma.cdk.InfrastructureApp.getEnvVar;
+import static cloud.cleo.chimesma.cdk.InfrastructureApp.hasEnvVar;
 
 /**
  * Stack to provision a Chime Phone number and create SIP rule pointing to it
@@ -33,8 +33,8 @@ public class ChimePhoneNumberStack extends Stack {
         super(parent, id, props);
 
         // Existing Phone Number already provisioned, just create the Sip Rule
-        if (hasEnv(CHIME_PHONE_NUMBER)) {
-            final var phoneNumber = getEnv(CHIME_PHONE_NUMBER);
+        if (hasEnvVar(CHIME_PHONE_NUMBER)) {
+            final var phoneNumber = getEnvVar(CHIME_PHONE_NUMBER);
             // Create SIP Rule pointing to the SMA's 
             new ChimeSipRulePhone(this, phoneNumber, smas, getStackName()  );
 
@@ -44,10 +44,10 @@ public class ChimePhoneNumberStack extends Stack {
                     .build());
         }
 
-        if (hasEnv(CHIME_AREA_CODE)) {
+        if (hasEnvVar(CHIME_AREA_CODE)) {
 
             // Search for a phone Number (but do it in a nested stack)
-            final var phoneNumber = new ChimePhoneNumberSearch(this, getEnv(CHIME_AREA_CODE)).getPhoneNumber();
+            final var phoneNumber = new ChimePhoneNumberSearch(this, getEnvVar(CHIME_AREA_CODE)).getPhoneNumber();
 
             final var order = new ChimePhoneNumberOrder(this, phoneNumber);
 

@@ -32,8 +32,8 @@ public class TwilioStack extends Stack {
         }
 
         // Associate Phone NUmber to Trunk if SID provided
-        if (InfrastructureApp.hasEnv(InfrastructureApp.ENV_VARS.TWILIO_PHONE_NUMBER_SID)) {
-            new TwilioTrunkPhoneNumber(this, sipTrunk.getTwilioSid(), InfrastructureApp.getEnv(InfrastructureApp.ENV_VARS.TWILIO_PHONE_NUMBER_SID));
+        if (InfrastructureApp.hasEnvVar(InfrastructureApp.ENV_VARS.TWILIO_PHONE_NUMBER_SID)) {
+            new TwilioTrunkPhoneNumber(this, sipTrunk.getTwilioSid(), InfrastructureApp.getEnvVar(InfrastructureApp.ENV_VARS.TWILIO_PHONE_NUMBER_SID));
         }
     }
 

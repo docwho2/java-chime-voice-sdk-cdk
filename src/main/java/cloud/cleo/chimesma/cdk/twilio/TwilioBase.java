@@ -77,8 +77,8 @@ public abstract class TwilioBase extends Function {
                 .retryAttempts(0)
                 .memorySize(512)
                 .code(getCode())
-                .environment(Map.of(TWILIO_ACCOUNT_SID.toString(), InfrastructureApp.getEnv(TWILIO_ACCOUNT_SID),
-                        TWILIO_AUTH_TOKEN.toString(), InfrastructureApp.getEnv(TWILIO_AUTH_TOKEN)))
+                .environment(Map.of(TWILIO_ACCOUNT_SID.toString(), InfrastructureApp.getEnvVar(TWILIO_ACCOUNT_SID),
+                        TWILIO_AUTH_TOKEN.toString(), InfrastructureApp.getEnvVar(TWILIO_AUTH_TOKEN)))
                 .build());
 
         // Add associated Custom Resource linked to this Lambda
