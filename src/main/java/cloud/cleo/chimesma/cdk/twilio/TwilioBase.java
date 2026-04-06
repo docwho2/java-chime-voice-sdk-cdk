@@ -49,7 +49,7 @@ public abstract class TwilioBase extends Function {
 
         builderOptions = BundlingOptions.builder()
                 .command(packagingInstructions)
-                .image(JAVA_21.getBundlingImage())
+                .image(JAVA_25.getBundlingImage())
                 .user("root")
                 .outputType(BundlingOutput.ARCHIVED)
                 .volumes(singletonList(DockerVolume.builder().hostPath(System.getProperty("user.home") + "/.m2/").containerPath("/root/.m2/").build())).build();
@@ -65,7 +65,7 @@ public abstract class TwilioBase extends Function {
     protected TwilioBase(Stack scope, Class c, Map<String,? extends Object> props) {
         super(scope, c.getSimpleName() + "LAM" + ID_COUNTER.incrementAndGet(), FunctionProps.builder()
                 .handler(c.getName())
-                .runtime(JAVA_21)
+                .runtime(JAVA_25)
                 .architecture(Architecture.ARM_64)
                 .description(c.getSimpleName() + " Provisioning Lambda")
                 .timeout(Duration.seconds(30))
