@@ -83,7 +83,7 @@
         <dependency>
             <groupId>software.constructs</groupId>
             <artifactId>constructs</artifactId>
-            <version>10.6.0</version>
+            <version>10.7.0</version>
         </dependency>
         
         
